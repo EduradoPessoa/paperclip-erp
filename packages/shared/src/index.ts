@@ -2745,6 +2745,20 @@ export {
   type CompleteProductionOrder,
 } from "./erp-production.js";
 
+// --- Serviços (service orders) ---
+export {
+  SERVICE_ORDER_STATUSES,
+  serviceOrderItemSchema,
+  createServiceOrderSchema,
+  scheduleServiceOrderSchema,
+  completeServiceOrderSchema,
+  serviceOrderTotals,
+  type ServiceOrderStatus,
+  type ServiceOrderItem,
+  type CreateServiceOrder,
+  type CompleteServiceOrder,
+} from "./erp-services.js";
+
 // --- Master data ---
 export {
   MASTER_ENTITY_STATUSES,

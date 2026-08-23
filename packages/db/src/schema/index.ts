@@ -195,3 +195,4 @@ export { erpPayables, erpReceivables } from "./financial_entries.js";
 export { erpInventoryLots, erpInventoryMovements } from "./inventory.js";
 export { erpWmsLocations, erpWmsPickWaves, erpWmsCycleCounts } from "./wms.js";
 export { erpProductionOrders, erpProductionOrderItems } from "./production.js";
+export { erpServiceOrders, erpServiceOrderItems } from "./services.js";

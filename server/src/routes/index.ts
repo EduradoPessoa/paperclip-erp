@@ -51,3 +51,4 @@ export { billingRoutes } from "./billing.js";
 export { inventoryRoutes } from "./inventory.js";
 export { wmsRoutes } from "./wms.js";
 export { productionRoutes } from "./production.js";
+export { serviceOrderRoutes } from "./service-orders.js";
