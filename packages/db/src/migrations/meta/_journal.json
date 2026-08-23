@@ -1653,6 +1653,13 @@
       "when": 1787506736413,
       "tag": "0237_aromatic_patch",
       "breakpoints": true
+    },
+    {
+      "idx": 238,
+      "version": "7",
+      "when": 1787506975470,
+      "tag": "0238_fast_naoko",
+      "breakpoints": true
     }
   ]
 }

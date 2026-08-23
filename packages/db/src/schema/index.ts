@@ -198,3 +198,4 @@ export { erpProductionOrders, erpProductionOrderItems } from "./production.js";
 export { erpServiceOrders, erpServiceOrderItems } from "./services.js";
 export { erpFreightOrders, erpFreightTrackingEvents } from "./tms.js";
 export { erpImportOrders, erpImportOrderItems } from "./imports.js";
+export { erpExportOrders, erpExportOrderItems } from "./exports.js";

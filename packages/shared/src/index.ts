@@ -2788,6 +2788,20 @@ export {
   type ImportAllocationResult,
 } from "./erp-imports.js";
 
+// --- Exportação ---
+export {
+  EXPORT_ORDER_STATUSES,
+  INCOTERMS,
+  exportOrderItemSchema,
+  createExportOrderSchema,
+  declareExportOrderSchema,
+  exportOrderTotals,
+  type ExportOrderStatus,
+  type Incoterm,
+  type ExportOrderItem,
+  type CreateExportOrder,
+} from "./erp-exports.js";
+
 // --- Master data ---
 export {
   MASTER_ENTITY_STATUSES,
