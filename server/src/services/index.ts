@@ -207,3 +207,4 @@ export { masterDataService, type MasterDataListOptions } from "./master-data.js"
 export { financialEntriesService, type FinancialEntryListOptions } from "./financial-entries.js";
 export { purchasingService, type PurchasingActor } from "./purchasing.js";
 export { salesService, type SalesActor } from "./sales.js";
+export { billingService, type BillingActor } from "./billing.js";

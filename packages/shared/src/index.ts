@@ -2695,6 +2695,13 @@ export {
   type SalesOrderFields,
 } from "./erp-sales.js";
 
+// --- Faturamento (billing) ---
+export {
+  buildPlaceholderAccessKey,
+  createBillingInvoiceSchema,
+  type CreateBillingInvoice,
+} from "./erp-billing.js";
+
 // --- Master data ---
 export {
   MASTER_ENTITY_STATUSES,

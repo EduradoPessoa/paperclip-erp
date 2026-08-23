@@ -47,3 +47,4 @@ export { masterDataRoutes } from "./master-data.js";
 export { financialEntriesRoutes } from "./financial-entries.js";
 export { purchasingRoutes } from "./purchasing.js";
 export { salesRoutes } from "./sales.js";
+export { billingRoutes } from "./billing.js";

@@ -48,6 +48,7 @@ export interface FiscalActor {
 export interface FiscalListOptions {
   status?: string;
   model?: string;
+  direction?: string;
   limit: number;
   offset: number;
 }
@@ -435,6 +436,7 @@ export function fiscalService(db: Db, deps: FiscalServiceDeps = {}) {
       const conditions = [eq(fiscalDocuments.companyId, companyId)];
       if (options.status) conditions.push(eq(fiscalDocuments.status, options.status));
       if (options.model) conditions.push(eq(fiscalDocuments.model, options.model));
+      if (options.direction) conditions.push(eq(fiscalDocuments.operationDirection, options.direction));
       const rows = await db
         .select()
         .from(fiscalDocuments)
