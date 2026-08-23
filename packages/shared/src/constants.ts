@@ -952,6 +952,9 @@ export type MemoryTargetType = (typeof MEMORY_TARGET_TYPES)[number];
 export const MEMORY_JOB_STATUSES = ["queued", "running", "succeeded", "failed", "cancelled"] as const;
 export type MemoryJobStatus = (typeof MEMORY_JOB_STATUSES)[number];
 
+export const MEMORY_PROVIDER_KEYS = ["local_trail"] as const;
+export type MemoryProviderKey = (typeof MEMORY_PROVIDER_KEYS)[number];
+
 // --- ERP modules (catálogo estável) ---
 
 export const ERP_MODULE_KEYS = [

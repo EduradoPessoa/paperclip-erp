@@ -2629,10 +2629,12 @@ export {
   MEMORY_OPERATION_STATUSES,
   MEMORY_TARGET_TYPES,
   MEMORY_JOB_STATUSES,
+  MEMORY_PROVIDER_KEYS,
   type MemoryOperationType,
   type MemoryOperationStatus,
   type MemoryTargetType,
   type MemoryJobStatus,
+  type MemoryProviderKey,
 } from "./constants.js";
 export type {
   MemoryScope,
@@ -2642,6 +2644,13 @@ export type {
   MemoryBindingTarget,
   MemoryOperation,
   MemoryExtractionJob,
+  MemoryProviderCapabilities,
+  MemoryCaptureRecord,
+  MemoryCaptureInput,
+  MemoryCaptureOutput,
+  MemoryQueryInput,
+  MemoryQueryOutput,
+  MemoryProvider,
 } from "./types/memory.js";
 export {
   memoryScopeSchema,

@@ -14,10 +14,14 @@ import {
   upsertMemoryBindingSchema,
 } from "@paperclipai/shared";
 import { validate } from "../middleware/validate.js";
-import { logActivity, memoryService } from "../services/index.js";
+import { logActivity, memoryHooksService, memoryService } from "../services/index.js";
 import { assertAuthenticated, assertBoard, assertCompanyAccess, getActorInfo } from "./authz.js";
 import { badRequest } from "../errors.js";
+import { registerBuiltinMemoryProviders } from "../memory/index.js";
 import type { MemoryActor } from "../services/memory.js";
+import type { RunHookActor } from "../services/memory-hooks.js";
+
+registerBuiltinMemoryProviders();
 
 function parseLimit(raw: unknown, fallback = 100) {
   if (raw == null || raw === "") return fallback;
@@ -45,6 +49,7 @@ function toMemoryActor(actor: ReturnType<typeof getActorInfo>): MemoryActor {
 export function memoryRoutes(db: Db) {
   const router = Router();
   const memory = memoryService(db);
+  const hooks = memoryHooksService(db);
 
   router.get("/companies/:companyId/memory/bindings", async (req, res) => {
     const companyId = req.params.companyId as string;
@@ -207,6 +212,54 @@ export function memoryRoutes(db: Db) {
         status,
       }),
     );
+  });
+
+  function toRunHookActor(actor: ReturnType<typeof getActorInfo>): RunHookActor {
+    return {
+      actorType: actor.actorType,
+      actorId: actor.actorId,
+      agentId: actor.agentId,
+      runId: actor.runId,
+    };
+  }
+
+  router.post("/companies/:companyId/memory/runs/:runId/hydrate", async (req, res) => {
+    const companyId = req.params.companyId as string;
+    assertCompanyAccess(req, companyId);
+    assertAuthenticated(req);
+    const actor = getActorInfo(req);
+    const result = await hooks.hydrateForRun(companyId, req.params.runId as string, toRunHookActor(actor));
+    await logActivity(db, {
+      companyId,
+      actorType: actor.actorType,
+      actorId: actor.actorId,
+      agentId: actor.agentId,
+      action: "memory.run_hydrated",
+      entityType: "heartbeat_run",
+      entityId: req.params.runId as string,
+      details: { providerKey: result.providerKey },
+    });
+    res.json(result);
+  });
+
+  router.post("/companies/:companyId/memory/runs/:runId/capture", async (req, res) => {
+    const companyId = req.params.companyId as string;
+    assertCompanyAccess(req, companyId);
+    assertAuthenticated(req);
+    const actor = getActorInfo(req);
+    const summary = typeof req.body?.summary === "string" ? req.body.summary : null;
+    const result = await hooks.captureRun(companyId, req.params.runId as string, toRunHookActor(actor), summary);
+    await logActivity(db, {
+      companyId,
+      actorType: actor.actorType,
+      actorId: actor.actorId,
+      agentId: actor.agentId,
+      action: "memory.run_captured",
+      entityType: "heartbeat_run",
+      entityId: req.params.runId as string,
+      details: { providerKey: result.providerKey, recordIds: result.recordIds },
+    });
+    res.status(201).json(result);
   });
 
   return router;
