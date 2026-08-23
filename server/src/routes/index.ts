@@ -59,3 +59,4 @@ export { omsRoutes } from "./oms.js";
 export { accountingRoutes } from "./accounting.js";
 export { fixedAssetRoutes } from "./fixed-assets.js";
 export { costingRoutes } from "./costing.js";
+export { agentActivityRoutes } from "./agent-activity.js";

@@ -220,3 +220,4 @@ export { omsService, type OmsActor } from "./oms.js";
 export { accountingService, type AccountingActor } from "./accounting.js";
 export { fixedAssetsService, type FixedAssetActor } from "./fixed-assets.js";
 export { costingService, type CostingActor } from "./costing.js";
+export { agentActivityService, startOfDayUtc } from "./agent-activity.js";

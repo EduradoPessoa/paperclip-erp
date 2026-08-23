@@ -2623,6 +2623,14 @@ export type {
   RunTimelineResult,
 } from "./types/run-timeline.js";
 
+// --- Agent activity (acompanhamento de agentes) ---
+export type {
+  AgentActivitySummary,
+  AgentActivityEventKind,
+  AgentActivityEvent,
+  AgentActivityFeed,
+} from "./types/agent-activity.js";
+
 // --- Execution memory ---
 export {
   MEMORY_OPERATION_TYPES,
