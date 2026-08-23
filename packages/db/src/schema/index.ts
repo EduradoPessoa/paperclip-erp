@@ -199,3 +199,4 @@ export { erpServiceOrders, erpServiceOrderItems } from "./services.js";
 export { erpFreightOrders, erpFreightTrackingEvents } from "./tms.js";
 export { erpImportOrders, erpImportOrderItems } from "./imports.js";
 export { erpExportOrders, erpExportOrderItems } from "./exports.js";
+export { erpOmsOrders, erpOmsOrderItems } from "./oms.js";

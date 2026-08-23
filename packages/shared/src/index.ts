@@ -2802,6 +2802,19 @@ export {
   type CreateExportOrder,
 } from "./erp-exports.js";
 
+// --- OMS ---
+export {
+  OMS_CHANNELS,
+  OMS_ORDER_STATUSES,
+  omsOrderItemSchema,
+  createOmsOrderSchema,
+  omsOrderTotals,
+  type OmsChannel,
+  type OmsOrderStatus,
+  type OmsOrderItem,
+  type CreateOmsOrder,
+} from "./erp-oms.js";
+
 // --- Master data ---
 export {
   MASTER_ENTITY_STATUSES,

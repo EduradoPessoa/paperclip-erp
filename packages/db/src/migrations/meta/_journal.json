@@ -1660,6 +1660,13 @@
       "when": 1787506975470,
       "tag": "0238_fast_naoko",
       "breakpoints": true
+    },
+    {
+      "idx": 239,
+      "version": "7",
+      "when": 1787507201102,
+      "tag": "0239_faithful_triton",
+      "breakpoints": true
     }
   ]
 }

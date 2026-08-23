@@ -215,3 +215,4 @@ export { serviceOrdersService, type ServiceOrderActor } from "./service-orders.j
 export { tmsService, type TmsActor } from "./tms.js";
 export { importOrdersService, type ImportActor } from "./imports.js";
 export { exportOrdersService, type ExportActor } from "./exports.js";
+export { omsService, type OmsActor } from "./oms.js";
