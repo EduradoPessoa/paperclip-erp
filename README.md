@@ -207,7 +207,7 @@ auditoria, segredos, plugins e integrações.
 | Pipelines: estágios, transições, revisão humana, automação | Primeiro módulo de domínio (ciclo comercial) |
 | Cases: documentos de negócio com eventos e histórico | Memória de execução (bindings + operações + provedores) |
 | Ledger financeiro (`finance_events`) e orçamentos | RBAC por módulo (`erp.<módulo>:<ação>`) |
-| Auditoria: activity, case events, revisões de documentos | Central de Execução (Live Board, Run Player, Process Flow) |
+| Auditoria: activity, case events, revisões de documentos | **Central de Execução V1 ✅** (Live Board: runs ao vivo, contadores, "aguardando humano" — ver [`doc/plans/2026-08-23-execucao-visual-agentes.md`](doc/plans/2026-08-23-execucao-visual-agentes.md)) |
 | Agents, routines, approvals, plugins, conexões | Entidades mestras: clientes, fornecedores, produtos, plano de contas |
 | | **Módulo Fiscal — F1–F3 ✅**: contrato `FiscalProvider` + adapter SPEDY + tabelas `fiscal_*` · webhooks/live events · secrets · fila fiscal (**UI no board**) · downloads e **persistência de XML/DANFE em `assets`** · entrada (Compras): lookup, confirmação com créditos, manifestação (ver [`doc/plans/2026-08-23-modulo-fiscal.md`](doc/plans/2026-08-23-modulo-fiscal.md)) · F4+: IBS/CBS pleno, split payment |
 

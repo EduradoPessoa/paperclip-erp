@@ -251,3 +251,29 @@ ciclo comercial da Fase 2 do plano ERP), V3/V4 seguem conforme os módulos vão 
   `AgentDetail.tsx` (rota `/agents/:agentId/runs/:runId`).
 - Tabelas: `heartbeat_runs`, `heartbeat_run_events`, `cost_events`, `activity_log`,
   `case_events`, `pipeline_automation_executions`, `issue_work_products`.
+
+---
+
+## 10. Status de Implementação — V1 (Live Board) ✅
+
+Implementado e verificado em 2026-08-23. **Estratégia V1: UI-first** — o Live Board
+consome endpoints já existentes (sem novo backend), o que entrega valor visual imediato e
+baixo risco; o endpoint agregador dedicado fica para quando o Run Player precisar.
+
+| Item | Onde | Status |
+|---|---|---|
+| Página **Execução** `/companies/:companyId/execution` | `ui/src/pages/Execution.tsx` | ✅ |
+| **Cards de contadores**: runs ativos, agentes trabalhando, aguardando humano, custo no mês | idem (dados de `live-runs`, `dashboard`, `review-cases`, `fiscal/queue`) | ✅ |
+| **Grid de runs ao vivo** (agente, status, mensagem/snippet, duração, adapter, ferramenta atual) com polling 5s | idem (`GET /companies/:companyId/live-runs`) | ✅ |
+| **Aguardando decisão humana**: casos em revisão de pipeline (com sugestões pendentes) + aprovações + **documentos fiscais na fila** (link para o módulo Fiscal) | idem (`review-cases`, `dashboard.pendingApprovals`, `fiscal/queue`) | ✅ |
+| Cliente de API `ui/src/api/execution.ts` | — | ✅ |
+| Rota em `App.tsx` + nav "Execução" no sidebar | — | ✅ |
+| Typecheck UI + token-gate (página nova sem violações) | — | ✅ |
+
+**Notas V1:**
+- Os live events `fiscal.document.*` (F2) e os runs do módulo fiscal já aparecem
+  naturalmente: a fila fiscal entra nos contadores "aguardando humano" e os runs entram
+  no grid ao vivo.
+- Próximos (V2+): **Run Player** (timeline estruturada por run — endpoint agregador
+  `GET /runs/:runId/timeline`), **Process Flow** (kanban por pipeline com runs ativos),
+  Timeline Gantt com filtros por módulo, e realtime via WebSocket com fallback.

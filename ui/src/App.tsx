@@ -34,6 +34,7 @@ import { Routines } from "./pages/Routines";
 import { Learnings, PipelineItemDetail, PipelineItemLegacyRedirect, Pipelines, ReviewQueue } from "./pages/Pipelines";
 import { PipelineSettings } from "./pages/PipelineSettings";
 import { Fiscal } from "./pages/Fiscal";
+import { Execution } from "./pages/Execution";
 import { StatusCards } from "./pages/StatusCards";
 import { RoutineDetail } from "./pages/RoutineDetail";
 import { UserProfile } from "./pages/UserProfile";
@@ -270,6 +271,7 @@ function boardRoutes() {
         element={<PipelinesExperimentalGate><PipelineItemDetail /></PipelinesExperimentalGate>}
       />
       <Route path="fiscal" element={<Fiscal />} />
+      <Route path="execution" element={<Execution />} />
       <Route
         path="pipelines/:pipelineId/cases/:caseId"
         element={<PipelinesExperimentalGate><PipelineItemLegacyRedirect /></PipelinesExperimentalGate>}
