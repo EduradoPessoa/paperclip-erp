@@ -33,6 +33,7 @@ import { IssueChatLongThreadPerf } from "./pages/IssueChatLongThreadPerf";
 import { Routines } from "./pages/Routines";
 import { Learnings, PipelineItemDetail, PipelineItemLegacyRedirect, Pipelines, ReviewQueue } from "./pages/Pipelines";
 import { PipelineSettings } from "./pages/PipelineSettings";
+import { Fiscal } from "./pages/Fiscal";
 import { StatusCards } from "./pages/StatusCards";
 import { RoutineDetail } from "./pages/RoutineDetail";
 import { UserProfile } from "./pages/UserProfile";
@@ -268,6 +269,7 @@ function boardRoutes() {
         path="pipelines/:pipelineId/items/:caseId"
         element={<PipelinesExperimentalGate><PipelineItemDetail /></PipelinesExperimentalGate>}
       />
+      <Route path="fiscal" element={<Fiscal />} />
       <Route
         path="pipelines/:pipelineId/cases/:caseId"
         element={<PipelinesExperimentalGate><PipelineItemLegacyRedirect /></PipelinesExperimentalGate>}

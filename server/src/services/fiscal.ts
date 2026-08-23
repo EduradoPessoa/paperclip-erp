@@ -60,6 +60,18 @@ export interface FiscalServiceDeps {
    * secret does not exist or has no value.
    */
   resolveCompanySecret?: (companyId: string, name: string) => Promise<string | null>;
+  /**
+   * Persists a document file (XML/DANFE) to company storage and returns the
+   * `assets` row id (F3: wired to storageService.putFile + assetService.create
+   * in the routes). Returns null when persistence is unavailable.
+   */
+  persistFile?: (input: {
+    companyId: string;
+    filename: string;
+    contentType: string;
+    body: Buffer;
+    actor: FiscalActor;
+  }) => Promise<string | null>;
 }
 
 /** Provider callback payload accepted on the webhook endpoint. */
@@ -278,6 +290,45 @@ export function fiscalService(db: Db, deps: FiscalServiceDeps = {}) {
         providerKey: input.providerKey ?? null,
       },
     });
+  }
+
+  /** Best-effort XML retention: persists the provider-signed XML as an asset. */
+  async function maybePersistSignedXml(input: {
+    companyId: string;
+    fiscalDocumentId: string;
+    doc: { id: string; accessKey: string; xmlAssetId: string | null };
+    signedXml?: string | null;
+    actor: FiscalActor;
+  }) {
+    if (!deps.persistFile || !input.signedXml || input.doc.xmlAssetId) return;
+    try {
+      const assetId = await deps.persistFile({
+        companyId: input.companyId,
+        filename: `${input.doc.accessKey}.xml`,
+        contentType: "application/xml",
+        body: Buffer.from(input.signedXml, "utf8"),
+        actor: input.actor,
+      });
+      if (assetId) {
+        await db
+          .update(fiscalDocuments)
+          .set({ xmlAssetId: assetId, updatedAt: new Date() })
+          .where(
+            and(eq(fiscalDocuments.id, input.fiscalDocumentId), eq(fiscalDocuments.companyId, input.companyId)),
+          );
+      }
+    } catch (error) {
+      await insertEvent({
+        companyId: input.companyId,
+        fiscalDocumentId: input.fiscalDocumentId,
+        kind: "error",
+        actor: input.actor,
+        payload: {
+          action: "xml_persist_failed",
+          message: error instanceof Error ? error.message : String(error),
+        },
+      }).catch(() => undefined);
+    }
   }
 
   return {
@@ -536,6 +587,14 @@ export function fiscalService(db: Db, deps: FiscalServiceDeps = {}) {
         providerKey: binding.providerKey,
       });
 
+      await maybePersistSignedXml({
+        companyId,
+        fiscalDocumentId,
+        doc: { id: doc.id, accessKey: doc.accessKey, xmlAssetId: doc.xmlAssetId },
+        signedXml: result.signedXml,
+        actor,
+      });
+
       return { document: await loadDetail(companyId, fiscalDocumentId), providerResult: result };
     },
 
@@ -582,6 +641,14 @@ export function fiscalService(db: Db, deps: FiscalServiceDeps = {}) {
         companyId,
         document: { id: doc.id, model: doc.model, accessKey: doc.accessKey, status: nextStatus },
         providerKey: doc.providerKey,
+      });
+
+      await maybePersistSignedXml({
+        companyId,
+        fiscalDocumentId,
+        doc: { id: doc.id, accessKey: doc.accessKey, xmlAssetId: doc.xmlAssetId },
+        signedXml: result.signedXml,
+        actor,
       });
 
       return { document: await loadDetail(companyId, fiscalDocumentId), providerResult: result };
@@ -906,6 +973,78 @@ export function fiscalService(db: Db, deps: FiscalServiceDeps = {}) {
       return kind === "xml"
         ? provider.downloadXml(request)
         : provider.downloadDanfe(request);
+    },
+
+    persistDocumentFiles: async (
+      companyId: string,
+      fiscalDocumentId: string,
+      actor: FiscalActor,
+    ) => {
+      const doc = await assertBelongsToCompany(fiscalDocuments, fiscalDocumentId, companyId, "Fiscal document");
+      if (!doc.providerKey || !doc.providerDocumentId) {
+        throw conflict("Fiscal document has no provider reference to download");
+      }
+      if (!deps.persistFile) {
+        throw unprocessable("File persistence is not wired for this deployment");
+      }
+      const binding = await resolveBinding(companyId, doc.model as FiscalDocumentModel);
+      const providerConfig = await resolveProviderConfig(binding, companyId);
+      const provider = getFiscalProviderFactory(binding.providerKey)(providerConfig);
+      const request = {
+        companyId,
+        documentId: doc.id,
+        providerDocumentId: doc.providerDocumentId,
+        accessKey: doc.accessKey,
+        environment: providerConfig.environment,
+      };
+
+      const persisted: Array<{ kind: "xml" | "danfe"; assetId: string; byteSize: number }> = [];
+      if (!doc.xmlAssetId) {
+        const xml = await provider.downloadXml(request);
+        const assetId = await deps.persistFile({
+          companyId,
+          filename: `${doc.accessKey}.xml`,
+          contentType: xml.contentType,
+          body: Buffer.from(xml.content),
+          actor,
+        });
+        if (assetId) {
+          await db
+            .update(fiscalDocuments)
+            .set({ xmlAssetId: assetId, updatedAt: new Date() })
+            .where(and(eq(fiscalDocuments.id, fiscalDocumentId), eq(fiscalDocuments.companyId, companyId)));
+          persisted.push({ kind: "xml", assetId, byteSize: xml.content.byteLength });
+        }
+      }
+
+      if (!doc.danfeAssetId && provider.capabilities.danfe) {
+        const danfe = await provider.downloadDanfe(request);
+        const assetId = await deps.persistFile({
+          companyId,
+          filename: `${doc.accessKey}-danfe.pdf`,
+          contentType: danfe.contentType,
+          body: Buffer.from(danfe.content),
+          actor,
+        });
+        if (assetId) {
+          await db
+            .update(fiscalDocuments)
+            .set({ danfeAssetId: assetId, updatedAt: new Date() })
+            .where(and(eq(fiscalDocuments.id, fiscalDocumentId), eq(fiscalDocuments.companyId, companyId)));
+          persisted.push({ kind: "danfe", assetId, byteSize: danfe.content.byteLength });
+        }
+      }
+
+      await insertEvent({
+        companyId,
+        fiscalDocumentId,
+        kind: "provider_callback",
+        actor,
+        providerEventKind: "files_persisted",
+        payload: { persisted },
+      });
+
+      return { document: await loadDetail(companyId, fiscalDocumentId), persisted };
     },
 
     listEvents: async (companyId: string, fiscalDocumentId: string) => {

@@ -19,10 +19,11 @@ import {
   fiscalProviderBindingSchema,
 } from "@paperclipai/shared";
 import { validate } from "../middleware/validate.js";
-import { fiscalService, logActivity, secretService } from "../services/index.js";
+import { assetService, fiscalService, logActivity, secretService } from "../services/index.js";
 import { assertAuthenticated, assertBoard, assertCompanyAccess, getActorInfo } from "./authz.js";
 import { registerBuiltinFiscalProviders } from "../fiscal/index.js";
 import { badRequest, forbidden, unauthorized } from "../errors.js";
+import type { StorageService } from "../storage/types.js";
 import type { FiscalActor } from "../services/fiscal.js";
 
 registerBuiltinFiscalProviders();
@@ -58,15 +59,38 @@ function tokensEqual(a: string, b: string): boolean {
   return timingSafeEqual(aHash, bHash);
 }
 
-export function fiscalRoutes(db: Db) {
+export function fiscalRoutes(db: Db, options: { storageService?: StorageService } = {}) {
   const router = Router();
   const secrets = secretService(db);
+  const assets = assetService(db);
   const fiscal = fiscalService(db, {
     resolveCompanySecret: async (companyId: string, name: string) => {
       const secret = await secrets.getByName(companyId, name);
       if (!secret) return null;
       return secrets.resolveSecretValue(companyId, secret.id, "latest");
     },
+    persistFile: options.storageService
+      ? async (input) => {
+          const put = await options.storageService!.putFile({
+            companyId: input.companyId,
+            namespace: "fiscal",
+            originalFilename: input.filename,
+            contentType: input.contentType,
+            body: input.body,
+          });
+          const asset = await assets.create(input.companyId, {
+            provider: put.provider,
+            objectKey: put.objectKey,
+            contentType: put.contentType,
+            byteSize: put.byteSize,
+            sha256: put.sha256,
+            originalFilename: put.originalFilename,
+            createdByUserId: input.actor.actorType === "user" ? input.actor.actorId : null,
+            createdByAgentId: input.actor.actorType === "agent" ? input.actor.agentId : null,
+          });
+          return asset.id;
+        }
+      : undefined,
   });
 
   router.post(
@@ -331,6 +355,25 @@ export function fiscalRoutes(db: Db) {
       res.json(result);
     },
   );
+
+  router.post("/companies/:companyId/fiscal/documents/:documentId/persist-files", async (req, res) => {
+    const companyId = req.params.companyId as string;
+    assertCompanyAccess(req, companyId);
+    assertBoard(req);
+    const actor = getActorInfo(req);
+    const result = await fiscal.persistDocumentFiles(companyId, req.params.documentId as string, toFiscalActor(actor));
+    await logActivity(db, {
+      companyId,
+      actorType: actor.actorType,
+      actorId: actor.actorId,
+      agentId: actor.agentId,
+      action: "fiscal.document_files_persisted",
+      entityType: "fiscal_document",
+      entityId: result.document.document.id,
+      details: { persisted: result.persisted },
+    });
+    res.json(result);
+  });
 
   /**
    * Provider webhook endpoint (F2). Called by the fiscal integrator with

@@ -347,6 +347,16 @@ Implementado e verificado em 2026-08-23:
   vinculam ao documento fiscal e ao tipo de tributo (IBS/CBS/ICMS/PIS/COFINS...).
 - Conferência automática contra pedido de compra (case) fica para o módulo Compras.
 
-**Próximo (F4/F5):** persistência de XML/DANFE em `assets` (repositório com SHA-256),
-campos IBS/CBS/IS plenos + split payment → Financeiro, fila fiscal no board (UI),
-CT-e/MDF-e e preparação para DF-e.
+### F3.5 — Persistência de XML/DANFE + Fila fiscal no board ✅
+
+| Item | Onde | Status |
+|---|---|---|
+| **Persistência em `assets`**: `storageService.putFile` (namespace `fiscal`) + `assetService.create` (SHA-256, provider, objectKey) — dep `persistFile` no serviço | `server/src/routes/fiscal.ts` (wiring) + `server/src/services/fiscal.ts` | ✅ |
+| Hook automático: XML assinado retornado em `emit`/`consult` é persistido e vinculado a `xmlAssetId` (best-effort; falha vira evento `error`) | `maybePersistSignedXml` | ✅ |
+| Ação explícita `persistDocumentFiles` — baixa XML (+DANFE se o provedor suportar), persiste e vincula `xmlAssetId`/`danfeAssetId`; rota `POST .../documents/:id/persist-files` (board) | serviço + rota | ✅ |
+| **Fila fiscal no board (UI)**: página `/companies/:companyId/fiscal` com contadores por status, tabela de documentos pendentes e ações (Transmitir, Confirmar entrada, Consultar, Persistir XML/DANFE) | `ui/src/pages/Fiscal.tsx` + `ui/src/api/fiscal.ts` + rota em `App.tsx` + nav no `Sidebar` | ✅ |
+| Typecheck shared/server/ui | `pnpm typecheck` | ✅ |
+| Token-gate: página nova sem violações (`check:token-gates` carrega 0 entradas de allowlist neste snapshot — drift pré-existente entre `index.css` e o parser do script, não causado por estas mudanças) | — | ✅ (página limpa) |
+
+**Próximo (F4/F5):** campos IBS/CBS/IS plenos + split payment → Financeiro, CT-e/MDF-e,
+preparação para DF-e, e integração da fila fiscal com a Central de Execução (Live Board).
