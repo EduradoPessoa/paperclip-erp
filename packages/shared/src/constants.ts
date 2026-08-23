@@ -871,6 +871,52 @@ export const FINANCE_UNITS = [
 ] as const;
 export type FinanceUnit = (typeof FINANCE_UNITS)[number];
 
+// --- Fiscal (módulo fiscal do Paperclip ERP) ---
+
+export const FISCAL_DOCUMENT_MODELS = ["nfe", "nfce", "nfse", "cte", "mdfe", "dfe"] as const;
+export type FiscalDocumentModel = (typeof FISCAL_DOCUMENT_MODELS)[number];
+
+export const FISCAL_DOCUMENT_STATUSES = [
+  "draft",
+  "validated",
+  "transmitted",
+  "authorized",
+  "rejected",
+  "denied",
+  "cancelled",
+  "invalidated",
+  "error",
+] as const;
+export type FiscalDocumentStatus = (typeof FISCAL_DOCUMENT_STATUSES)[number];
+
+export const FISCAL_EVENT_KINDS = [
+  "created",
+  "validated",
+  "transmitted",
+  "authorized",
+  "rejected",
+  "denied",
+  "cancelled",
+  "invalidated",
+  "cc-e",
+  "manifestation",
+  "provider_callback",
+  "error",
+] as const;
+export type FiscalEventKind = (typeof FISCAL_EVENT_KINDS)[number];
+
+export const FISCAL_TAX_TYPES = ["ibs", "cbs", "is", "icms", "ipi", "pis", "cofins"] as const;
+export type FiscalTaxType = (typeof FISCAL_TAX_TYPES)[number];
+
+export const FISCAL_ENVIRONMENTS = ["homologation", "production"] as const;
+export type FiscalEnvironment = (typeof FISCAL_ENVIRONMENTS)[number];
+
+export const FISCAL_PROVIDER_KEYS = ["spedy"] as const;
+export type FiscalProviderKey = (typeof FISCAL_PROVIDER_KEYS)[number];
+
+export const FISCAL_OPERATION_DIRECTIONS = ["inbound", "outbound"] as const;
+export type FiscalOperationDirection = (typeof FISCAL_OPERATION_DIRECTIONS)[number];
+
 export const BUDGET_SCOPE_TYPES = ["company", "agent", "project"] as const;
 export type BudgetScopeType = (typeof BUDGET_SCOPE_TYPES)[number];
 

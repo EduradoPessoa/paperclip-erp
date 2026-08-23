@@ -261,3 +261,33 @@ calendário da reforma; F5 acompanha TMS/varejo e o futuro DF-e.
 - Plugins + conexões (`app-definitions`) — caminho para novos provedores/integradores.
 - Central de Execução (`doc/plans/2026-08-23-execucao-visual-agentes.md`) — superfície
   para fila fiscal e eventos em tempo real.
+
+---
+
+## 10. Status de Implementação — F1 (fundação do provedor) ✅
+
+Implementado e verificado em 2026-08-23:
+
+| Item | Onde | Status |
+|---|---|---|
+| Constantes fiscais (modelos, status, eventos, tributos, ambientes, providers) | `packages/shared/src/constants.ts` | ✅ |
+| Contrato `FiscalProvider` + DTOs (emit/cancel/invalidate/consult/download/listEvents, capabilities, bindings) | `packages/shared/src/types/fiscal.ts` | ✅ |
+| Validators zod (draft, cancel, binding) | `packages/shared/src/validators/fiscal.ts` | ✅ |
+| Tabelas `fiscal_provider_bindings`, `fiscal_documents`, `fiscal_document_items`, `fiscal_document_taxes`, `fiscal_events` (append-only), `fiscal_document_links` | `packages/db/src/schema/fiscal.ts` + migração `0227_tranquil_the_stranger.sql` | ✅ |
+| Registry de providers (agnóstico, factory por key) | `server/src/fiscal/registry.ts` | ✅ |
+| Adapter **SPEDY** (esqueleto funcional contra `api.spedy.br`, mapeamento a validar no OpenAPI em homologação) | `server/src/fiscal/providers/spedy.ts` | ✅ |
+| Serviço fiscal (draft, list/detail, bindings, transmit/consult/cancel, eventos com ator) | `server/src/services/fiscal.ts` | ✅ |
+| Rotas company-scoped (`/companies/:companyId/fiscal/...`) — leituras autenticadas; mutações board-only (F1) | `server/src/routes/fiscal.ts` + `server/src/app.ts` | ✅ |
+| Testes unitários (validators + registry) | `fiscal.test.ts` (shared), `registry.test.ts` (server) — 9/9 ✅ | ✅ |
+| Typecheck dos pacotes tocados (shared/db/server) | `pnpm typecheck` | ✅ |
+
+**Notas F1 (deliberadas):**
+- Credenciais: o binding aceita `extra.apiKey` (transitório) e `apiKeySecretRef`; a
+  resolução via `company_secrets` é F2 — o serviço retorna erro claro se só houver ref.
+- Mutações board-only; caminhos de agente chegam na fase de skills do módulo, sempre via
+  protocolo humano-no-controle (sugerir → aprovar → executar → relatar).
+- Mapeamento de endpoints SPEDY a confirmar contra o OpenAPI público em homologação SEFAZ.
+
+**Próximo (F2):** ciclo de vida completo (webhooks `fiscal.document.*` no live events,
+DANFE/PDF, NFS-e nacional), resolução de segredos via `company_secrets`, fila fiscal no
+board e integração com a Central de Execução.
