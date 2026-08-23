@@ -96,7 +96,12 @@ export type CreateBoardApiKey = z.infer<typeof createBoardApiKeySchema>;
 export const updateMemberPermissionsSchema = z.object({
   grants: z.array(
     z.object({
-      permissionKey: z.enum(PERMISSION_KEYS),
+      permissionKey: z.union([
+        z.enum(PERMISSION_KEYS),
+        z
+          .string()
+          .regex(/^erp:[a-z0-9-]+:[a-z0-9_-]+$/, "ERP permission keys must follow erp:<module>:<action>"),
+      ]),
       scope: z.record(z.string(), z.unknown()).optional().nullable(),
     }),
   ),

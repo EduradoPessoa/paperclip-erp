@@ -11,6 +11,7 @@ import type { Db } from "@paperclipai/db";
 import { purchaseOrderFieldsSchema } from "@paperclipai/shared";
 import { z } from "zod";
 import { validate } from "../middleware/validate.js";
+import { assertErpPermission } from "../services/erp-permissions.js";
 import { logActivity, purchasingService } from "../services/index.js";
 import { assertAuthenticated, assertBoard, assertCompanyAccess, getActorInfo } from "./authz.js";
 import { unauthorized, unprocessable } from "../errors.js";
@@ -56,6 +57,7 @@ export function purchasingRoutes(db: Db) {
       const companyId = req.params.companyId as string;
       assertCompanyAccess(req, companyId);
       assertBoard(req);
+      await assertErpPermission(db, { companyId, actor: req.actor, permissionKey: "erp:purchasing:manage" });
       const actor = getActorInfo(req);
       const order = await purchasing.createOrder(companyId, req.body, toPurchasingActor(actor));
       const orderId = (order as { case?: { id: string } }).case?.id ?? (order as { id?: string }).id;
@@ -80,6 +82,7 @@ export function purchasingRoutes(db: Db) {
       const companyId = req.params.companyId as string;
       assertCompanyAccess(req, companyId);
       assertBoard(req);
+      await assertErpPermission(db, { companyId, actor: req.actor, permissionKey: "erp:purchasing:manage" });
       const actor = getActorInfo(req);
       const result = await purchasing.receiptFromFiscal(
         companyId,

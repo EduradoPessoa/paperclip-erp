@@ -9,6 +9,7 @@ import { Router } from "express";
 import type { Db } from "@paperclipai/db";
 import { installErpModuleSchema, updateErpModuleSchema } from "@paperclipai/shared";
 import { validate } from "../middleware/validate.js";
+import { assertErpPermission } from "../services/erp-permissions.js";
 import { erpModuleService, logActivity } from "../services/index.js";
 import { assertAuthenticated, assertBoard, assertCompanyAccess, getActorInfo } from "./authz.js";
 
@@ -30,6 +31,7 @@ export function erpModuleRoutes(db: Db) {
       const companyId = req.params.companyId as string;
       assertCompanyAccess(req, companyId);
       assertBoard(req);
+      await assertErpPermission(db, { companyId, actor: req.actor, permissionKey: "erp:modules:manage" });
       const actor = getActorInfo(req);
       const module = await modules.install(companyId, req.body, {
         actorType: actor.actorType,
@@ -56,6 +58,7 @@ export function erpModuleRoutes(db: Db) {
       const companyId = req.params.companyId as string;
       assertCompanyAccess(req, companyId);
       assertBoard(req);
+      await assertErpPermission(db, { companyId, actor: req.actor, permissionKey: "erp:modules:manage" });
       const actor = getActorInfo(req);
       const module = await modules.update(companyId, req.params.moduleKey as never, req.body);
       await logActivity(db, {
@@ -76,6 +79,7 @@ export function erpModuleRoutes(db: Db) {
     const companyId = req.params.companyId as string;
     assertCompanyAccess(req, companyId);
     assertBoard(req);
+    await assertErpPermission(db, { companyId, actor: req.actor, permissionKey: "erp:modules:manage" });
     const actor = getActorInfo(req);
     const result = await modules.uninstall(companyId, req.params.moduleKey as string);
     await logActivity(db, {
