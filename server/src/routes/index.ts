@@ -49,3 +49,4 @@ export { purchasingRoutes } from "./purchasing.js";
 export { salesRoutes } from "./sales.js";
 export { billingRoutes } from "./billing.js";
 export { inventoryRoutes } from "./inventory.js";
+export { wmsRoutes } from "./wms.js";

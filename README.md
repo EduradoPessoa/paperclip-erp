@@ -203,7 +203,7 @@ auditoria, segredos, plugins e integrações.
 
 | ✅ Já existe (motor) | 🚧 Em construção (nossa camada) |
 |---|---|
-| Multitenancy real e segurança (secrets, keys, grants) | **Fase 1/2/3 ✅**: manifesto de módulos · memória M1 · RBAC base · entidades mestras · Financeiro base · **Compras/Vendas/Faturamento ✅** (ciclo comercial + Fiscal) · **Estoques ✅** (movimentos + lotes + saldo, recebimento fiscal e expedição de vendas) |
+| Multitenancy real e segurança (secrets, keys, grants) | **Fase 1/2/3 ✅**: manifesto de módulos · memória M1 · RBAC base · entidades mestras · Financeiro base · **Compras/Vendas/Faturamento ✅** · **Estoques ✅** · **WMS ✅** (endereçamento, ondas de separação, inventário cíclico) |
 | Pipelines: estágios, transições, revisão humana, automação | Entidades mestras: clientes, fornecedores, produtos, plano de contas |
 | Cases: documentos de negócio com eventos e histórico | Memória de execução (bindings + operações + provedores) |
 | Ledger financeiro (`finance_events`) e orçamentos | RBAC por módulo (`erp.<módulo>:<ação>`) |

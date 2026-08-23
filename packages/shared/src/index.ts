@@ -2715,6 +2715,26 @@ export {
   type ShipFromSales,
 } from "./erp-inventory.js";
 
+// --- WMS ---
+export {
+  WMS_LOCATION_STATUSES,
+  PICK_WAVE_STATUSES,
+  CYCLE_COUNT_STATUSES,
+  createWmsLocationSchema,
+  putAwaySchema,
+  pickSchema,
+  createPickWaveSchema,
+  createCycleCountSchema,
+  type WmsLocationStatus,
+  type PickWaveStatus,
+  type CycleCountStatus,
+  type CreateWmsLocation,
+  type PutAway,
+  type Pick,
+  type CreatePickWave,
+  type CreateCycleCount,
+} from "./erp-wms.js";
+
 // --- Master data ---
 export {
   MASTER_ENTITY_STATUSES,
