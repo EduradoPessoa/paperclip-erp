@@ -201,6 +201,7 @@ export function financeEventKindDisplayName(eventKind: FinanceEventKind): string
     custom_model_storage_charge: "Custom model storage",
     manual_adjustment: "Manual adjustment",
     fiscal_tax_credit: "Fiscal tax credit",
+    fiscal_split_withheld: "Fiscal split withheld",
   };
   return map[eventKind];
 }

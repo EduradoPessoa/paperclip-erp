@@ -595,7 +595,43 @@ export function fiscalService(db: Db, deps: FiscalServiceDeps = {}) {
         actor,
       });
 
-      return { document: await loadDetail(companyId, fiscalDocumentId), providerResult: result };
+      // F4 — split payment: on authorization, record the withheld tax portion
+      // as a finance event (reforma tributária — recolhimento na liquidação).
+      let splitFinanceEventId: string | null = null;
+      const split = doc.splitPayment as FiscalSplitPaymentInput | null;
+      if (result.status === "authorized" && split?.enabled && split.withheldCents > 0) {
+        const finance = financeService(db);
+        const event = await finance.createEvent(companyId, {
+          agentId: null,
+          issueId: doc.issueId,
+          projectId: null,
+          goalId: null,
+          heartbeatRunId: null,
+          costEventId: null,
+          billingCode: null,
+          description: `Split payment retido — ${doc.accessKey}`,
+          eventKind: "fiscal_split_withheld",
+          direction: "debit",
+          biller: "fiscal:split",
+          provider: binding.providerKey,
+          amountCents: split.withheldCents,
+          currency: "BRL",
+          estimated: true,
+          occurredAt: new Date(),
+          metadataJson: {
+            fiscalDocumentId: doc.id,
+            accessKey: doc.accessKey,
+            rateBps: split.rateBps ?? null,
+          },
+        });
+        splitFinanceEventId = event.id;
+      }
+
+      return {
+        document: await loadDetail(companyId, fiscalDocumentId),
+        providerResult: result,
+        splitFinanceEventId,
+      };
     },
 
     consult: async (companyId: string, fiscalDocumentId: string, actor: FiscalActor) => {

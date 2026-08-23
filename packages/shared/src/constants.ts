@@ -851,6 +851,7 @@ export const FINANCE_EVENT_KINDS = [
   "custom_model_storage_charge",
   "manual_adjustment",
   "fiscal_tax_credit",
+  "fiscal_split_withheld",
 ] as const;
 export type FinanceEventKind = (typeof FINANCE_EVENT_KINDS)[number];
 
