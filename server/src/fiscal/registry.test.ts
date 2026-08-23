@@ -10,6 +10,8 @@ function makeStubProvider(key: string): FiscalProvider {
     cancel: async () => ({ status: "cancelled" }),
     invalidate: async () => ({ status: "invalidated" }),
     consult: async () => ({ status: "transmitted" }),
+    fetchByAccessKey: async () => ({ status: "authorized" }),
+    manifest: async () => ({ status: "ok" }),
     downloadXml: async () => ({ content: new Uint8Array(), contentType: "application/xml", filename: "x.xml" }),
     downloadDanfe: async () => ({ content: new Uint8Array(), contentType: "application/pdf", filename: "x.pdf" }),
     listEvents: async () => [],

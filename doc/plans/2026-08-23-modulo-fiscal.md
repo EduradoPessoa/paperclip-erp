@@ -321,3 +321,32 @@ Implementado e verificado em 2026-08-23:
 **Próximo (F3):** entrada de Compras (consulta por chave, conferência, manifestação do
 destinatário, créditos), persistência de XML/DANFE em `assets`, fila fiscal no board (UI)
 e integração com a Central de Execução (Live Board).
+
+---
+
+## 12. Status de Implementação — F3 (entrada — Compras) ✅
+
+Implementado e verificado em 2026-08-23:
+
+| Item | Onde | Status |
+|---|---|---|
+| Contrato `FiscalProvider.fetchByAccessKey` + `manifest` (+ capabilities `fetchByAccessKey`/`manifestation`) | `packages/shared/src/types/fiscal.ts` | ✅ |
+| Adapter SPEDY: `GET /v1/{accessKey}` (fetch externo) e `POST /v1/{accessKey}/manifestation` | `server/src/fiscal/providers/spedy.ts` | ✅ |
+| Constante `FISCAL_MANIFESTATION_KINDS` (ciencia/confirmacao/desconhecimento/nao_realizacao) + event kind `fiscal_tax_credit` no financeiro | `packages/shared/src/constants.ts` | ✅ |
+| Validators: `fiscalInboundLookupSchema`, `fiscalManifestationSchema` | `packages/shared/src/validators/fiscal.ts` | ✅ |
+| `fetchInboundDocument` — consulta de NF-e do fornecedor por chave (lookup informativo) | `fiscalService` + rota `POST .../fiscal/inbound/lookup` (board, auditada) | ✅ |
+| `confirmInbound` — confirmação de recebimento: status `validated` + **créditos** (tributos creditáveis) lançados como `finance_events` (`direction=credit`, `eventKind=fiscal_tax_credit`) | `fiscalService` + rota `POST .../documents/:id/confirm-inbound` | ✅ |
+| `manifest` — manifestação do destinatário (local + forward ao provider se suportado; evento `manifestation` auditado) | `fiscalService` + rota `POST .../documents/:id/manifestation` | ✅ |
+| Testes (13/13: validators, registry, status mappers, lookup/manifestação) | vitest | ✅ |
+| Typecheck shared/server | `pnpm typecheck` | ✅ |
+
+**Notas F3:**
+- O lookup é informativo (não cria documento); o fluxo de entrada completo é: lookup →
+  criar rascunho inbound (API existente) → confirm-inbound (créditos) → manifestação.
+- Créditos: apenas linhas `creditable=true` viram `finance_events`; descrição e metadata
+  vinculam ao documento fiscal e ao tipo de tributo (IBS/CBS/ICMS/PIS/COFINS...).
+- Conferência automática contra pedido de compra (case) fica para o módulo Compras.
+
+**Próximo (F4/F5):** persistência de XML/DANFE em `assets` (repositório com SHA-256),
+campos IBS/CBS/IS plenos + split payment → Financeiro, fila fiscal no board (UI),
+CT-e/MDF-e e preparação para DF-e.

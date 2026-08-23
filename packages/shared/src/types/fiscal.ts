@@ -14,6 +14,7 @@
 import type {
   FiscalDocumentModel,
   FiscalEnvironment,
+  FiscalManifestationKind,
   FiscalProviderKey,
   FiscalTaxType,
 } from "../constants.js";
@@ -179,11 +180,48 @@ export interface FiscalListEventsRequest {
   environment: FiscalEnvironment;
 }
 
+/** Fetch an external (supplier) electronic document by access key — inbound flow. */
+export interface FiscalFetchRequest {
+  companyId: string;
+  /** 44-digit chave de acesso of the supplier document. */
+  accessKey: string;
+  model: FiscalDocumentModel;
+  environment: FiscalEnvironment;
+}
+
+export interface FiscalFetchResult {
+  providerDocumentId?: string | null;
+  status: string;
+  protocol?: string | null;
+  message?: string | null;
+  signedXml?: string | null;
+  providerRaw?: Record<string, unknown>;
+}
+
+/** Manifestação do destinatário (inbound NF-e obligations). */
+export interface FiscalManifestRequest {
+  companyId: string;
+  accessKey: string;
+  kind: FiscalManifestationKind;
+  justification?: string | null;
+  environment: FiscalEnvironment;
+}
+
+export interface FiscalManifestResult {
+  status: "ok" | "error";
+  message?: string | null;
+  providerRaw?: Record<string, unknown>;
+}
+
 export interface FiscalProviderCapabilities {
   documentModels: FiscalDocumentModel[];
   danfe: boolean;
   webhooks: boolean;
   splitPayment: boolean;
+  /** Provider can forward manifestação do destinatário (inbound). */
+  manifestation?: boolean;
+  /** Provider can fetch external documents by access key (inbound). */
+  fetchByAccessKey?: boolean;
 }
 
 /**
@@ -198,6 +236,8 @@ export interface FiscalProvider {
   cancel(req: FiscalCancelRequest): Promise<FiscalCancelResult>;
   invalidate(req: FiscalInvalidateRequest): Promise<FiscalInvalidateResult>;
   consult(req: FiscalConsultRequest): Promise<FiscalStatusResult>;
+  fetchByAccessKey(req: FiscalFetchRequest): Promise<FiscalFetchResult>;
+  manifest(req: FiscalManifestRequest): Promise<FiscalManifestResult>;
   downloadXml(req: FiscalDownloadRequest): Promise<FiscalDownloadResult>;
   downloadDanfe(req: FiscalDownloadRequest): Promise<FiscalDownloadResult>;
   listEvents(req: FiscalListEventsRequest): Promise<FiscalProviderEvent[]>;

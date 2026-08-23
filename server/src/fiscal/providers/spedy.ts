@@ -21,9 +21,13 @@ import type {
   FiscalDownloadResult,
   FiscalEmitRequest,
   FiscalEmitResult,
+  FiscalFetchRequest,
+  FiscalFetchResult,
   FiscalInvalidateRequest,
   FiscalInvalidateResult,
   FiscalListEventsRequest,
+  FiscalManifestRequest,
+  FiscalManifestResult,
   FiscalProvider,
   FiscalProviderEvent,
   FiscalStatusResult,
@@ -86,6 +90,8 @@ export function createSpedyProvider(config: ResolvedFiscalProviderConfig): Fisca
       danfe: true,
       webhooks: true,
       splitPayment: true,
+      manifestation: true,
+      fetchByAccessKey: true,
     },
 
     async emit(req: FiscalEmitRequest): Promise<FiscalEmitResult> {
@@ -204,6 +210,53 @@ export function createSpedyProvider(config: ResolvedFiscalProviderConfig): Fisca
         protocol: data.protocol ?? null,
         message: data.message ?? null,
         signedXml: data.xml ?? null,
+        providerRaw: data as unknown as Record<string, unknown>,
+      };
+    },
+
+    async fetchByAccessKey(req: FiscalFetchRequest): Promise<FiscalFetchResult> {
+      if (!apiKey) {
+        throw badRequest("SPEDY provider is not configured with an API key (binding config)");
+      }
+      const { data } = await spedyRequest<{
+        id?: string;
+        status?: string;
+        protocol?: string | null;
+        message?: string | null;
+        xml?: string | null;
+      }>({
+        method: "GET",
+        path: `/v1/${req.accessKey}`,
+        apiKey,
+        baseUrl,
+      });
+      return {
+        providerDocumentId: data.id ?? null,
+        status: data.status ?? "transmitted",
+        protocol: data.protocol ?? null,
+        message: data.message ?? null,
+        signedXml: data.xml ?? null,
+        providerRaw: data as unknown as Record<string, unknown>,
+      };
+    },
+
+    async manifest(req: FiscalManifestRequest): Promise<FiscalManifestResult> {
+      if (!apiKey) {
+        throw badRequest("SPEDY provider is not configured with an API key (binding config)");
+      }
+      const { data } = await spedyRequest<{
+        status?: string;
+        message?: string | null;
+      }>({
+        method: "POST",
+        path: `/v1/${req.accessKey}/manifestation`,
+        apiKey,
+        baseUrl,
+        body: { kind: req.kind, justification: req.justification ?? undefined },
+      });
+      return {
+        status: data.status === "ok" ? "ok" : "error",
+        message: data.message ?? null,
         providerRaw: data as unknown as Record<string, unknown>,
       };
     },

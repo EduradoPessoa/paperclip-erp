@@ -850,6 +850,7 @@ export const FINANCE_EVENT_KINDS = [
   "custom_model_import_charge",
   "custom_model_storage_charge",
   "manual_adjustment",
+  "fiscal_tax_credit",
 ] as const;
 export type FinanceEventKind = (typeof FINANCE_EVENT_KINDS)[number];
 
@@ -916,6 +917,15 @@ export type FiscalProviderKey = (typeof FISCAL_PROVIDER_KEYS)[number];
 
 export const FISCAL_OPERATION_DIRECTIONS = ["inbound", "outbound"] as const;
 export type FiscalOperationDirection = (typeof FISCAL_OPERATION_DIRECTIONS)[number];
+
+/** Manifestação do destinatário (NF-e de entrada). */
+export const FISCAL_MANIFESTATION_KINDS = [
+  "ciencia",
+  "confirmacao",
+  "desconhecimento",
+  "nao_realizacao",
+] as const;
+export type FiscalManifestationKind = (typeof FISCAL_MANIFESTATION_KINDS)[number];
 
 export const BUDGET_SCOPE_TYPES = ["company", "agent", "project"] as const;
 export type BudgetScopeType = (typeof BUDGET_SCOPE_TYPES)[number];

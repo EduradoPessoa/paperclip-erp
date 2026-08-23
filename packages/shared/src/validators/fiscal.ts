@@ -2,6 +2,7 @@ import { z } from "zod";
 import {
   FISCAL_DOCUMENT_MODELS,
   FISCAL_ENVIRONMENTS,
+  FISCAL_MANIFESTATION_KINDS,
   FISCAL_PROVIDER_KEYS,
   FISCAL_TAX_TYPES,
 } from "../constants.js";
@@ -72,6 +73,16 @@ export const transmitFiscalDocumentSchema = z.object({});
 
 export const cancelFiscalDocumentSchema = z.object({
   justification: z.string().min(5).max(1000),
+});
+
+export const fiscalInboundLookupSchema = z.object({
+  accessKey: z.string().regex(/^\d{44}$/, "accessKey must be a 44-digit chave de acesso"),
+  model: z.enum(FISCAL_DOCUMENT_MODELS).optional().default("nfe"),
+});
+
+export const fiscalManifestationSchema = z.object({
+  kind: z.enum(FISCAL_MANIFESTATION_KINDS),
+  justification: z.string().max(1000).optional().nullable(),
 });
 
 export const fiscalProviderBindingSchema = z.object({

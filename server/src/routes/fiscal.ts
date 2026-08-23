@@ -14,6 +14,8 @@ import type { Db } from "@paperclipai/db";
 import {
   cancelFiscalDocumentSchema,
   createFiscalDocumentSchema,
+  fiscalInboundLookupSchema,
+  fiscalManifestationSchema,
   fiscalProviderBindingSchema,
 } from "@paperclipai/shared";
 import { validate } from "../middleware/validate.js";
@@ -258,6 +260,77 @@ export function fiscalRoutes(db: Db) {
     res.setHeader("Content-Disposition", `inline; filename="${file.filename}"`);
     res.send(Buffer.from(file.content));
   });
+
+  router.post(
+    "/companies/:companyId/fiscal/inbound/lookup",
+    validate(fiscalInboundLookupSchema),
+    async (req, res) => {
+      const companyId = req.params.companyId as string;
+      assertCompanyAccess(req, companyId);
+      assertBoard(req);
+      const actor = getActorInfo(req);
+      const result = await fiscal.fetchInboundDocument(companyId, req.body.accessKey, req.body.model);
+      await logActivity(db, {
+        companyId,
+        actorType: actor.actorType,
+        actorId: actor.actorId,
+        agentId: actor.agentId,
+        action: "fiscal.inbound_lookup",
+        entityType: "fiscal_document",
+        entityId: req.body.accessKey,
+        details: { accessKey: req.body.accessKey, model: req.body.model, status: result.status },
+      });
+      res.json(result);
+    },
+  );
+
+  router.post("/companies/:companyId/fiscal/documents/:documentId/confirm-inbound", async (req, res) => {
+    const companyId = req.params.companyId as string;
+    assertCompanyAccess(req, companyId);
+    assertBoard(req);
+    const actor = getActorInfo(req);
+    const result = await fiscal.confirmInbound(companyId, req.params.documentId as string, toFiscalActor(actor));
+    await logActivity(db, {
+      companyId,
+      actorType: actor.actorType,
+      actorId: actor.actorId,
+      agentId: actor.agentId,
+      action: "fiscal.inbound_confirmed",
+      entityType: "fiscal_document",
+      entityId: result.document.document.id,
+      details: { creditCount: result.credits.length, creditCents: result.credits.reduce((s, c) => s + c.amountCents, 0) },
+    });
+    res.json(result);
+  });
+
+  router.post(
+    "/companies/:companyId/fiscal/documents/:documentId/manifestation",
+    validate(fiscalManifestationSchema),
+    async (req, res) => {
+      const companyId = req.params.companyId as string;
+      assertCompanyAccess(req, companyId);
+      assertBoard(req);
+      const actor = getActorInfo(req);
+      const result = await fiscal.manifest(
+        companyId,
+        req.params.documentId as string,
+        req.body.kind,
+        req.body.justification ?? null,
+        toFiscalActor(actor),
+      );
+      await logActivity(db, {
+        companyId,
+        actorType: actor.actorType,
+        actorId: actor.actorId,
+        agentId: actor.agentId,
+        action: "fiscal.manifestation",
+        entityType: "fiscal_document",
+        entityId: result.document.document.id,
+        details: { kind: req.body.kind },
+      });
+      res.json(result);
+    },
+  );
 
   /**
    * Provider webhook endpoint (F2). Called by the fiscal integrator with

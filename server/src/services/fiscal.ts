@@ -23,6 +23,8 @@ import type {
   CreateFiscalDocument,
   FiscalDocumentModel,
   FiscalEmitRequest,
+  FiscalFetchRequest,
+  FiscalManifestationKind,
   FiscalPartyInput,
   FiscalProviderBinding,
   FiscalProviderBindingConfig,
@@ -33,6 +35,7 @@ import type {
 import { conflict, notFound, unprocessable } from "../errors.js";
 import { assertSupportedFiscalProviderKey, getFiscalProviderFactory } from "../fiscal/registry.js";
 import type { ResolvedFiscalProviderConfig } from "../fiscal/provider.js";
+import { financeService } from "./finance.js";
 import { publishLiveEvent } from "./live-events.js";
 
 export interface FiscalActor {
@@ -751,6 +754,138 @@ export function fiscalService(db: Db, deps: FiscalServiceDeps = {}) {
         callbackStatus: nextStatus,
         terminal: isTerminal,
       };
+    },
+
+    fetchInboundDocument: async (
+      companyId: string,
+      accessKey: string,
+      model: FiscalDocumentModel,
+    ) => {
+      const binding = await resolveBinding(companyId, model);
+      const providerConfig = await resolveProviderConfig(binding, companyId);
+      const provider = getFiscalProviderFactory(binding.providerKey)(providerConfig);
+      if (!provider.capabilities.fetchByAccessKey) {
+        throw unprocessable(`Fiscal provider "${binding.providerKey}" cannot fetch external documents`);
+      }
+      const request: FiscalFetchRequest = {
+        companyId,
+        accessKey,
+        model,
+        environment: providerConfig.environment,
+      };
+      const result = await provider.fetchByAccessKey(request);
+
+      return result;
+    },
+
+    confirmInbound: async (companyId: string, fiscalDocumentId: string, actor: FiscalActor) => {
+      const doc = await assertBelongsToCompany(fiscalDocuments, fiscalDocumentId, companyId, "Fiscal document");
+      if (doc.operationDirection !== "inbound") {
+        throw conflict("Only inbound documents can be confirmed as received");
+      }
+      if (!["draft", "validated", "authorized"].includes(doc.status)) {
+        throw conflict(`Inbound document cannot be confirmed from status "${doc.status}"`);
+      }
+
+      const taxes = await loadTaxes(companyId, fiscalDocumentId);
+      const finance = financeService(db);
+      const credits: Array<{ taxType: string; amountCents: number; financeEventId: string }> = [];
+      for (const tax of taxes) {
+        if (!tax.creditable || tax.amountCents <= 0) continue;
+        const event = await finance.createEvent(companyId, {
+          agentId: null,
+          issueId: doc.issueId,
+          projectId: null,
+          goalId: null,
+          heartbeatRunId: null,
+          costEventId: null,
+          billingCode: null,
+          description: `Crédito fiscal ${tax.taxType} — ${doc.accessKey}`,
+          eventKind: "fiscal_tax_credit",
+          direction: "credit",
+          biller: "fiscal",
+          provider: doc.providerKey,
+          amountCents: tax.amountCents,
+          currency: "BRL",
+          estimated: false,
+          occurredAt: new Date(),
+          metadataJson: {
+            fiscalDocumentId: doc.id,
+            accessKey: doc.accessKey,
+            taxType: tax.taxType,
+          },
+        });
+        credits.push({ taxType: tax.taxType, amountCents: tax.amountCents, financeEventId: event.id });
+      }
+
+      await db
+        .update(fiscalDocuments)
+        .set({ status: "validated", errorMessage: null, updatedAt: new Date() })
+        .where(and(eq(fiscalDocuments.id, fiscalDocumentId), eq(fiscalDocuments.companyId, companyId)));
+
+      await insertEvent({
+        companyId,
+        fiscalDocumentId,
+        kind: "validated",
+        actor,
+        payload: { confirmed: true, creditCount: credits.length, creditCents: credits.reduce((sum, c) => sum + c.amountCents, 0) },
+      });
+
+      publishStatusChanged({
+        companyId,
+        document: { id: doc.id, model: doc.model, accessKey: doc.accessKey, status: "validated" },
+        providerKey: doc.providerKey,
+      });
+
+      return { document: await loadDetail(companyId, fiscalDocumentId), credits };
+    },
+
+    manifest: async (
+      companyId: string,
+      fiscalDocumentId: string,
+      kind: FiscalManifestationKind,
+      justification: string | null,
+      actor: FiscalActor,
+    ) => {
+      const doc = await assertBelongsToCompany(fiscalDocuments, fiscalDocumentId, companyId, "Fiscal document");
+      if (doc.operationDirection !== "inbound") {
+        throw conflict("Only inbound documents accept manifestação do destinatário");
+      }
+
+      let providerResult: { status: "ok" | "error"; message?: string | null } | null = null;
+      if (doc.providerKey) {
+        const binding = await resolveBinding(companyId, doc.model as FiscalDocumentModel);
+        const providerConfig = await resolveProviderConfig(binding, companyId);
+        const provider = getFiscalProviderFactory(binding.providerKey)(providerConfig);
+        if (provider.capabilities.manifestation) {
+          providerResult = await provider.manifest({
+            companyId,
+            accessKey: doc.accessKey,
+            kind,
+            justification,
+            environment: providerConfig.environment,
+          });
+          if (providerResult.status === "error") {
+            throw conflict(providerResult.message ?? "Provider did not confirm manifestation");
+          }
+        }
+      }
+
+      await insertEvent({
+        companyId,
+        fiscalDocumentId,
+        kind: "manifestation",
+        actor,
+        payload: { kind, justification: justification ?? null, providerStatus: providerResult?.status ?? "local" },
+      });
+
+      publishLiveEvent({
+        companyId,
+        type: "fiscal.document.callback_received",
+        payload: { documentId: doc.id, accessKey: doc.accessKey, status: doc.status, kind },
+      });
+
+      return { document: await loadDetail(companyId, fiscalDocumentId), providerResult };
     },
 
     download: async (companyId: string, fiscalDocumentId: string, kind: "xml" | "danfe") => {

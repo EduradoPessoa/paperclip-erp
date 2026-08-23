@@ -2,6 +2,8 @@ import { describe, expect, it } from "vitest";
 import {
   cancelFiscalDocumentSchema,
   createFiscalDocumentSchema,
+  fiscalInboundLookupSchema,
+  fiscalManifestationSchema,
   fiscalProviderBindingSchema,
 } from "./fiscal.js";
 
@@ -87,5 +89,18 @@ describe("fiscal validators", () => {
     expect(() =>
       fiscalProviderBindingSchema.parse({ providerKey: "unknown-gateway", config: {} }),
     ).toThrow();
+  });
+
+  it("validates inbound lookup access keys and model default", () => {
+    const parsed = fiscalInboundLookupSchema.parse({ accessKey: "35260814000123000000000000000000000000000001" });
+    expect(parsed.model).toBe("nfe");
+    expect(() => fiscalInboundLookupSchema.parse({ accessKey: "short" })).toThrow();
+  });
+
+  it("accepts all manifestação do destinatário kinds", () => {
+    for (const kind of ["ciencia", "confirmacao", "desconhecimento", "nao_realizacao"]) {
+      expect(fiscalManifestationSchema.parse({ kind }).kind).toBe(kind);
+    }
+    expect(() => fiscalManifestationSchema.parse({ kind: "invalid" })).toThrow();
   });
 });
