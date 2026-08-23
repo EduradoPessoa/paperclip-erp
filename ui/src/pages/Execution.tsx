@@ -164,6 +164,12 @@ export function Execution() {
                   <div className="text-xs text-muted-foreground">
                     Iniciado {formatDateTime(run.startedAt ?? run.createdAt)}
                   </div>
+                  <Link
+                    to={`/execution/runs/${run.id}`}
+                    className="text-xs font-medium text-muted-foreground underline hover:text-foreground"
+                  >
+                    Ver linha do tempo
+                  </Link>
                 </div>
               ))}
             </div>

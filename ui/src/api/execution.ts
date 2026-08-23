@@ -1,4 +1,4 @@
-import type { DashboardSummary } from "@paperclipai/shared";
+import type { DashboardSummary, RunTimelineResult } from "@paperclipai/shared";
 import { api } from "./client";
 
 /** Decorated live run row returned by GET /companies/:companyId/live-runs. */
@@ -73,4 +73,6 @@ export const executionApi = {
     api.get<ExecutionReviewCase[]>(`/companies/${companyId}/review-cases`),
   fiscalQueue: (companyId: string) =>
     api.get<ExecutionFiscalQueue>(`/companies/${companyId}/fiscal/queue?limit=1`),
+  runTimeline: (companyId: string, runId: string) =>
+    api.get<RunTimelineResult>(`/companies/${companyId}/runs/${runId}/timeline`),
 };

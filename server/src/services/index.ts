@@ -194,3 +194,10 @@ export {
 export { reconcilePersistedRuntimeServicesOnStartup, restartDesiredRuntimeServicesOnStartup } from "./workspace-runtime.js";
 export { createStorageServiceFromConfig, getStorageService } from "../storage/index.js";
 export { fiscalService, type FiscalActor, type FiscalListOptions } from "./fiscal.js";
+export {
+  runTimelineService,
+  mapRunEventToEntry,
+  mapActivityToEntry,
+  mapCostToEntry,
+  mapWorkProductToEntry,
+} from "./run-timeline.js";

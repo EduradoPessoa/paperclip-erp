@@ -277,3 +277,24 @@ baixo risco; o endpoint agregador dedicado fica para quando o Run Player precisa
 - Próximos (V2+): **Run Player** (timeline estruturada por run — endpoint agregador
   `GET /runs/:runId/timeline`), **Process Flow** (kanban por pipeline com runs ativos),
   Timeline Gantt com filtros por módulo, e realtime via WebSocket com fallback.
+
+---
+
+## 11. Status de Implementação — V2 (Run Player) ✅
+
+Implementado e verificado em 2026-08-23:
+
+| Item | Onde | Status |
+|---|---|---|
+| Tipos compartilhados `RunTimelineResult`/`RunTimelineEntry`/`RunTimelineTotals` | `packages/shared/src/types/run-timeline.ts` | ✅ |
+| Serviço agregador `runTimelineService` — run + agent, `heartbeat_run_events` (ordem por seq), `activity_log` (runId), `cost_events` (heartbeatRunId), `issue_work_products` (createdByRunId); mappers puros exportados p/ teste | `server/src/services/run-timeline.ts` | ✅ |
+| Rota `GET /companies/:companyId/runs/:runId/timeline` (company-scoped, leitura autenticada) | `server/src/routes/execution.ts` + `app.ts` | ✅ |
+| Página **Run Player** `/companies/:companyId/execution/runs/:runId` — resumo do run (agente, adapter, status, duração), cards (eventos, work products, ações auditadas, custo) e **linha do tempo vertical** com ícones por tipo | `ui/src/pages/RunPlayer.tsx` + `ui/src/api/execution.ts` | ✅ |
+| Link "Ver linha do tempo" nos cards do Live Board | `ui/src/pages/Execution.tsx` | ✅ |
+| Testes mappers (4) + suite fiscal (13) — **17/17** | vitest | ✅ |
+| Typecheck shared/server/ui + token-gate (páginas novas limpas) | — | ✅ |
+
+**Próximos (V3+):** **Process Flow** (kanban por pipeline com runs ativos e histórico de
+estágios por case), Timeline Gantt com filtros por módulo, realtime via WebSocket
+(`live-events-ws`) com fallback de polling, e profundidade no Run Player (transcript e
+logs brutos abaixo da timeline).

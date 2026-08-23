@@ -2613,3 +2613,12 @@ export {
   type CreateFiscalDocument,
   type UpsertFiscalProviderBinding,
 } from "./validators/fiscal.js";
+
+// --- Run timeline (Central de Execução / Run Player) ---
+export type {
+  RunTimelineEntryKind,
+  RunTimelineEntry,
+  RunTimelineTotals,
+  RunTimelineRun,
+  RunTimelineResult,
+} from "./types/run-timeline.js";
