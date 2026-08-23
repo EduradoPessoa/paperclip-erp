@@ -2759,6 +2759,20 @@ export {
   type CompleteServiceOrder,
 } from "./erp-services.js";
 
+// --- TMS ---
+export {
+  FREIGHT_ORDER_STATUSES,
+  TRACKING_STATUSES,
+  createFreightOrderSchema,
+  scheduleFreightSchema,
+  addTrackingEventSchema,
+  linkFiscalDocumentSchema,
+  type FreightOrderStatus,
+  type TrackingStatus,
+  type CreateFreightOrder,
+  type AddTrackingEvent,
+} from "./erp-tms.js";
+
 // --- Master data ---
 export {
   MASTER_ENTITY_STATUSES,

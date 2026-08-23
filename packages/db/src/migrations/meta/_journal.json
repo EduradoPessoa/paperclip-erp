@@ -1639,6 +1639,13 @@
       "when": 1787506317006,
       "tag": "0235_tense_white_tiger",
       "breakpoints": true
+    },
+    {
+      "idx": 236,
+      "version": "7",
+      "when": 1787506523110,
+      "tag": "0236_yielding_molten_man",
+      "breakpoints": true
     }
   ]
 }
