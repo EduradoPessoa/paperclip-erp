@@ -2673,6 +2673,17 @@ export {
   isErpPermissionKey,
 } from "./erp-permissions.js";
 
+// --- Compras (purchasing) ---
+export {
+  PURCHASE_ORDER_PIPELINE_KEY,
+  PURCHASE_ORDER_STAGES,
+  purchaseOrderItemSchema,
+  purchaseOrderFieldsSchema,
+  purchaseOrderTotals,
+  type PurchaseOrderItem,
+  type PurchaseOrderFields,
+} from "./erp-purchasing.js";
+
 // --- Master data ---
 export {
   MASTER_ENTITY_STATUSES,
