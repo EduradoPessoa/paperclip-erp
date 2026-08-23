@@ -58,3 +58,4 @@ export { exportOrderRoutes } from "./exports.js";
 export { omsRoutes } from "./oms.js";
 export { accountingRoutes } from "./accounting.js";
 export { fixedAssetRoutes } from "./fixed-assets.js";
+export { costingRoutes } from "./costing.js";

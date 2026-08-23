@@ -2840,6 +2840,19 @@ export {
   type DepreciationComputation,
 } from "./erp-fixed-assets.js";
 
+// --- Custo ---
+export {
+  COST_CENTER_STATUSES,
+  createCostCenterSchema,
+  createCostAllocationSchema,
+  computeProductionCost,
+  type CostCenterStatus,
+  type CreateCostCenter,
+  type CreateCostAllocation,
+  type ProductionCostMaterialInput,
+  type ProductionCostBreakdown,
+} from "./erp-costing.js";
+
 // --- Master data ---
 export {
   MASTER_ENTITY_STATUSES,

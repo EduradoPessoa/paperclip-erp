@@ -202,3 +202,4 @@ export { erpExportOrders, erpExportOrderItems } from "./exports.js";
 export { erpOmsOrders, erpOmsOrderItems } from "./oms.js";
 export { erpJournalEntries, erpJournalEntryLines } from "./accounting.js";
 export { erpFixedAssets, erpDepreciationRuns } from "./fixed_assets.js";
+export { erpCostCenters, erpCostAllocations } from "./costing.js";
