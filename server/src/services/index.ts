@@ -210,3 +210,4 @@ export { salesService, type SalesActor } from "./sales.js";
 export { billingService, type BillingActor } from "./billing.js";
 export { inventoryService, type InventoryActor } from "./inventory.js";
 export { wmsService, type WmsActor } from "./wms.js";
+export { productionService, type ProductionActor } from "./production.js";

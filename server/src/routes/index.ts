@@ -50,3 +50,4 @@ export { salesRoutes } from "./sales.js";
 export { billingRoutes } from "./billing.js";
 export { inventoryRoutes } from "./inventory.js";
 export { wmsRoutes } from "./wms.js";
+export { productionRoutes } from "./production.js";

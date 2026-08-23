@@ -2735,6 +2735,16 @@ export {
   type CreateCycleCount,
 } from "./erp-wms.js";
 
+// --- PCP (production) ---
+export {
+  PRODUCTION_ORDER_STATUSES,
+  createProductionOrderSchema,
+  completeProductionOrderSchema,
+  type ProductionOrderStatus,
+  type CreateProductionOrder,
+  type CompleteProductionOrder,
+} from "./erp-production.js";
+
 // --- Master data ---
 export {
   MASTER_ENTITY_STATUSES,
