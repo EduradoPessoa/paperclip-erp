@@ -8,6 +8,7 @@
  * protocol.
  */
 
+import { createHash, timingSafeEqual } from "node:crypto";
 import { Router } from "express";
 import type { Db } from "@paperclipai/db";
 import {
@@ -16,10 +17,10 @@ import {
   fiscalProviderBindingSchema,
 } from "@paperclipai/shared";
 import { validate } from "../middleware/validate.js";
-import { fiscalService, logActivity } from "../services/index.js";
+import { fiscalService, logActivity, secretService } from "../services/index.js";
 import { assertAuthenticated, assertBoard, assertCompanyAccess, getActorInfo } from "./authz.js";
 import { registerBuiltinFiscalProviders } from "../fiscal/index.js";
-import { badRequest } from "../errors.js";
+import { badRequest, forbidden, unauthorized } from "../errors.js";
 import type { FiscalActor } from "../services/fiscal.js";
 
 registerBuiltinFiscalProviders();
@@ -49,9 +50,22 @@ function toFiscalActor(actor: ReturnType<typeof getActorInfo>): FiscalActor {
   };
 }
 
+function tokensEqual(a: string, b: string): boolean {
+  const aHash = createHash("sha256").update(a).digest();
+  const bHash = createHash("sha256").update(b).digest();
+  return timingSafeEqual(aHash, bHash);
+}
+
 export function fiscalRoutes(db: Db) {
   const router = Router();
-  const fiscal = fiscalService(db);
+  const secrets = secretService(db);
+  const fiscal = fiscalService(db, {
+    resolveCompanySecret: async (companyId: string, name: string) => {
+      const secret = await secrets.getByName(companyId, name);
+      if (!secret) return null;
+      return secrets.resolveSecretValue(companyId, secret.id, "latest");
+    },
+  });
 
   router.post(
     "/companies/:companyId/fiscal/documents",
@@ -216,6 +230,89 @@ export function fiscalRoutes(db: Db) {
       res.json(binding);
     },
   );
+
+  router.get("/companies/:companyId/fiscal/queue", async (req, res) => {
+    const companyId = req.params.companyId as string;
+    assertCompanyAccess(req, companyId);
+    assertAuthenticated(req);
+    const queue = await fiscal.queue(companyId, parseLimit(req.query.limit, 50));
+    res.json(queue);
+  });
+
+  router.get("/companies/:companyId/fiscal/documents/:documentId/xml", async (req, res) => {
+    const companyId = req.params.companyId as string;
+    assertCompanyAccess(req, companyId);
+    assertBoard(req);
+    const file = await fiscal.download(companyId, req.params.documentId as string, "xml");
+    res.setHeader("Content-Type", file.contentType);
+    res.setHeader("Content-Disposition", `attachment; filename="${file.filename}"`);
+    res.send(Buffer.from(file.content));
+  });
+
+  router.get("/companies/:companyId/fiscal/documents/:documentId/danfe", async (req, res) => {
+    const companyId = req.params.companyId as string;
+    assertCompanyAccess(req, companyId);
+    assertBoard(req);
+    const file = await fiscal.download(companyId, req.params.documentId as string, "danfe");
+    res.setHeader("Content-Type", file.contentType);
+    res.setHeader("Content-Disposition", `inline; filename="${file.filename}"`);
+    res.send(Buffer.from(file.content));
+  });
+
+  /**
+   * Provider webhook endpoint (F2). Called by the fiscal integrator with
+   * status callbacks; authenticated by a per-binding webhook token, not a
+   * session. The callback is audited as a system actor and published on the
+   * company live-events channel.
+   */
+  router.post("/companies/:companyId/fiscal/webhooks/:providerKey", async (req, res) => {
+    const companyId = req.params.companyId as string;
+    const providerKey = req.params.providerKey as string;
+
+    const bindings = await fiscal.listBindings(companyId);
+    const binding = bindings.find((row) => row.providerKey === providerKey && row.enabled);
+    if (!binding) throw forbidden("Fiscal provider binding not found or disabled");
+
+    const extra = (binding.config.extra ?? {}) as Record<string, unknown>;
+    const webhookToken = typeof extra.webhookToken === "string" ? extra.webhookToken : undefined;
+    if (!webhookToken) throw unauthorized("Fiscal provider webhook is not configured with a token");
+
+    const supplied =
+      typeof req.header("x-webhook-token") === "string"
+        ? (req.header("x-webhook-token") as string)
+        : typeof req.body?.token === "string"
+          ? req.body.token
+          : null;
+    if (!supplied || !tokensEqual(supplied, webhookToken)) {
+      throw unauthorized("Invalid fiscal provider webhook token");
+    }
+
+    const accessKey = typeof req.body?.accessKey === "string" ? req.body.accessKey : null;
+    const status = typeof req.body?.status === "string" ? req.body.status : null;
+    if (!accessKey || !status) throw badRequest("Webhook payload requires accessKey and status");
+
+    const result = await fiscal.handleProviderCallback(companyId, providerKey, {
+      accessKey,
+      status,
+      protocol: typeof req.body?.protocol === "string" ? req.body.protocol : null,
+      message: typeof req.body?.message === "string" ? req.body.message : null,
+      eventKind: typeof req.body?.eventKind === "string" ? req.body.eventKind : null,
+      providerDocumentId: typeof req.body?.providerDocumentId === "string" ? req.body.providerDocumentId : null,
+    });
+
+    await logActivity(db, {
+      companyId,
+      actorType: "system",
+      actorId: `provider:${providerKey}`,
+      agentId: null,
+      action: "fiscal.document_callback",
+      entityType: "fiscal_document",
+      entityId: result.document.document.id,
+      details: { status: result.callbackStatus, providerKey, terminal: result.terminal },
+    });
+
+    res.json({ ok: true, documentId: result.document.document.id, status: result.callbackStatus });
+  });
 
   return router;
 }

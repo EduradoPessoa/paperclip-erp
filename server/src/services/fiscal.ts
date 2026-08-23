@@ -7,7 +7,7 @@
  * events are never updated or deleted by contract.
  */
 
-import { and, asc, desc, eq } from "drizzle-orm";
+import { and, asc, desc, eq, sql } from "drizzle-orm";
 import type { Db } from "@paperclipai/db";
 import {
   cases,
@@ -33,6 +33,7 @@ import type {
 import { conflict, notFound, unprocessable } from "../errors.js";
 import { assertSupportedFiscalProviderKey, getFiscalProviderFactory } from "../fiscal/registry.js";
 import type { ResolvedFiscalProviderConfig } from "../fiscal/provider.js";
+import { publishLiveEvent } from "./live-events.js";
 
 export interface FiscalActor {
   actorType: "user" | "agent" | "system";
@@ -48,7 +49,46 @@ export interface FiscalListOptions {
   offset: number;
 }
 
-function mapEmitStatusToDocumentStatus(status: string): string {
+/** Injected dependencies keep the service decoupled from the secrets stack. */
+export interface FiscalServiceDeps {
+  /**
+   * Resolves a company secret by name to its plaintext value (F2: wired to
+   * `secretService.resolveSecretValue` in the routes). Returns null when the
+   * secret does not exist or has no value.
+   */
+  resolveCompanySecret?: (companyId: string, name: string) => Promise<string | null>;
+}
+
+/** Provider callback payload accepted on the webhook endpoint. */
+export interface FiscalProviderCallbackInput {
+  accessKey: string;
+  status: string;
+  protocol?: string | null;
+  message?: string | null;
+  eventKind?: string | null;
+  providerDocumentId?: string | null;
+}
+
+export function mapCallbackStatusToDocumentStatus(status: string): string {
+  switch (status) {
+    case "authorized":
+      return "authorized";
+    case "rejected":
+      return "rejected";
+    case "denied":
+      return "denied";
+    case "cancelled":
+      return "cancelled";
+    case "invalidated":
+      return "invalidated";
+    case "error":
+      return "error";
+    default:
+      return "transmitted";
+  }
+}
+
+export function mapEmitStatusToDocumentStatus(status: string): string {
   switch (status) {
     case "authorized":
       return "authorized";
@@ -63,7 +103,7 @@ function mapEmitStatusToDocumentStatus(status: string): string {
   }
 }
 
-export function fiscalService(db: Db) {
+export function fiscalService(db: Db, deps: FiscalServiceDeps = {}) {
   async function assertBelongsToCompany(
     table: typeof fiscalDocuments,
     id: string,
@@ -102,7 +142,7 @@ export function fiscalService(db: Db) {
     kind: string;
     actor: FiscalActor;
     payload?: Record<string, unknown>;
-    providerEventKind?: string;
+    providerEventKind?: string | null;
   }) {
     return db
       .insert(fiscalEvents)
@@ -192,18 +232,24 @@ export function fiscalService(db: Db) {
     return covering ?? rows[0]!;
   }
 
-  function resolveProviderConfig(binding: {
-    providerKey: string;
-    config: Record<string, unknown>;
-  }): ResolvedFiscalProviderConfig {
+  async function resolveProviderConfig(
+    binding: { providerKey: string; config: Record<string, unknown> },
+    companyId: string,
+  ): Promise<ResolvedFiscalProviderConfig> {
     const config = binding.config;
     const extra = config.extra as Record<string, unknown> | undefined;
-    const apiKey = typeof extra?.apiKey === "string" ? extra.apiKey : undefined;
+    let apiKey = typeof extra?.apiKey === "string" ? extra.apiKey : undefined;
     const secretRef = typeof config.apiKeySecretRef === "string" ? config.apiKeySecretRef : undefined;
     if (secretRef && !apiKey) {
-      throw unprocessable(
-        "Fiscal provider binding uses apiKeySecretRef; secret resolution lands in F2 — configure extra.apiKey for F1",
-      );
+      if (!deps.resolveCompanySecret) {
+        throw unprocessable(
+          "Fiscal provider binding uses apiKeySecretRef but secret resolution is not wired (provide resolveCompanySecret)",
+        );
+      }
+      apiKey = (await deps.resolveCompanySecret(companyId, secretRef)) ?? undefined;
+      if (!apiKey) {
+        throw unprocessable(`Fiscal provider secret "${secretRef}" not found or has no value`);
+      }
     }
     return {
       baseUrl: typeof config.baseUrl === "string" ? config.baseUrl : "https://api.spedy.br",
@@ -211,6 +257,24 @@ export function fiscalService(db: Db) {
       apiKey,
       extra,
     };
+  }
+
+  function publishStatusChanged(input: {
+    companyId: string;
+    document: { id: string; model: string; accessKey: string; status: string };
+    providerKey?: string | null;
+  }) {
+    publishLiveEvent({
+      companyId: input.companyId,
+      type: "fiscal.document.status_changed",
+      payload: {
+        documentId: input.document.id,
+        model: input.document.model,
+        accessKey: input.document.accessKey,
+        status: input.document.status,
+        providerKey: input.providerKey ?? null,
+      },
+    });
   }
 
   return {
@@ -375,7 +439,7 @@ export function fiscalService(db: Db) {
       }
 
       const binding = await resolveBinding(companyId, doc.model as FiscalDocumentModel);
-      const providerConfig = resolveProviderConfig(binding);
+      const providerConfig = await resolveProviderConfig(binding, companyId);
       const provider = getFiscalProviderFactory(binding.providerKey)(providerConfig);
       const [items, taxes] = await Promise.all([
         loadItems(companyId, fiscalDocumentId),
@@ -463,6 +527,12 @@ export function fiscalService(db: Db) {
         },
       });
 
+      publishStatusChanged({
+        companyId,
+        document: { id: doc.id, model: doc.model, accessKey: doc.accessKey, status: nextStatus },
+        providerKey: binding.providerKey,
+      });
+
       return { document: await loadDetail(companyId, fiscalDocumentId), providerResult: result };
     },
 
@@ -472,7 +542,7 @@ export function fiscalService(db: Db) {
         throw conflict("Fiscal document has no provider reference to consult");
       }
       const binding = await resolveBinding(companyId, doc.model as FiscalDocumentModel);
-      const providerConfig = resolveProviderConfig(binding);
+      const providerConfig = await resolveProviderConfig(binding, companyId);
       const provider = getFiscalProviderFactory(binding.providerKey)(providerConfig);
 
       const result = await provider.consult({
@@ -505,6 +575,12 @@ export function fiscalService(db: Db) {
         payload: { status: nextStatus, protocol: result.protocol ?? null, message: result.message ?? null },
       });
 
+      publishStatusChanged({
+        companyId,
+        document: { id: doc.id, model: doc.model, accessKey: doc.accessKey, status: nextStatus },
+        providerKey: doc.providerKey,
+      });
+
       return { document: await loadDetail(companyId, fiscalDocumentId), providerResult: result };
     },
 
@@ -522,7 +598,7 @@ export function fiscalService(db: Db) {
         throw conflict("Fiscal document has no provider reference to cancel");
       }
       const binding = await resolveBinding(companyId, doc.model as FiscalDocumentModel);
-      const providerConfig = resolveProviderConfig(binding);
+      const providerConfig = await resolveProviderConfig(binding, companyId);
       const provider = getFiscalProviderFactory(binding.providerKey)(providerConfig);
 
       const result = await provider.cancel({
@@ -564,7 +640,137 @@ export function fiscalService(db: Db) {
         payload: { justification, protocol: result.protocol ?? null },
       });
 
+      publishStatusChanged({
+        companyId,
+        document: { id: doc.id, model: doc.model, accessKey: doc.accessKey, status: "cancelled" },
+        providerKey: doc.providerKey,
+      });
+
       return { document: await loadDetail(companyId, fiscalDocumentId), providerResult: result };
+    },
+
+    queue: async (companyId: string, limit = 50) => {
+      const pendingStatuses = ["draft", "validated", "transmitted", "rejected", "denied", "error"];
+      const rows = await db
+        .select()
+        .from(fiscalDocuments)
+        .where(
+          and(
+            eq(fiscalDocuments.companyId, companyId),
+            sql`${fiscalDocuments.status} in (${sql.join(pendingStatuses.map((s) => sql`${s}`), sql`, `)})`,
+          ),
+        )
+        .orderBy(desc(fiscalDocuments.updatedAt))
+        .limit(limit);
+
+      const counts = await db
+        .select({
+          status: fiscalDocuments.status,
+          count: sql<number>`count(*)::int`,
+        })
+        .from(fiscalDocuments)
+        .where(eq(fiscalDocuments.companyId, companyId))
+        .groupBy(fiscalDocuments.status);
+
+      return {
+        documents: rows,
+        counts: Object.fromEntries(counts.map((row) => [row.status, row.count])) as Record<string, number>,
+      };
+    },
+
+    handleProviderCallback: async (
+      companyId: string,
+      providerKey: string,
+      input: FiscalProviderCallbackInput,
+    ) => {
+      const row = await db
+        .select()
+        .from(fiscalDocuments)
+        .where(
+          and(
+            eq(fiscalDocuments.companyId, companyId),
+            eq(fiscalDocuments.accessKey, input.accessKey),
+            eq(fiscalDocuments.providerKey, providerKey),
+          ),
+        )
+        .limit(1)
+        .then((rows) => rows[0] ?? null);
+      if (!row) throw notFound("Fiscal document not found for access key");
+
+      const nextStatus = mapCallbackStatusToDocumentStatus(input.status);
+      const isTerminal =
+        nextStatus === "authorized" || nextStatus === "cancelled" || nextStatus === "invalidated";
+      await db
+        .update(fiscalDocuments)
+        .set({
+          status: nextStatus,
+          providerDocumentId: input.providerDocumentId ?? row.providerDocumentId,
+          protocol: input.protocol ?? row.protocol,
+          errorMessage:
+            nextStatus === "error" || nextStatus === "rejected" || nextStatus === "denied"
+              ? input.message ?? null
+              : null,
+          authorizedAt: nextStatus === "authorized" ? new Date() : row.authorizedAt,
+          cancelledAt: nextStatus === "cancelled" ? new Date() : row.cancelledAt,
+          updatedAt: new Date(),
+        })
+        .where(and(eq(fiscalDocuments.id, row.id), eq(fiscalDocuments.companyId, companyId)));
+
+      await insertEvent({
+        companyId,
+        fiscalDocumentId: row.id,
+        kind: input.eventKind === "cc-e" ? "cc-e" : nextStatus,
+        actor: { actorType: "system", actorId: `provider:${providerKey}`, agentId: null, runId: null },
+        providerEventKind: input.eventKind ?? null,
+        payload: {
+          providerKey,
+          status: nextStatus,
+          protocol: input.protocol ?? null,
+          message: input.message ?? null,
+        },
+      });
+
+      publishLiveEvent({
+        companyId,
+        type: "fiscal.document.callback_received",
+        payload: {
+          documentId: row.id,
+          accessKey: row.accessKey,
+          status: nextStatus,
+          providerKey,
+        },
+      });
+      publishStatusChanged({
+        companyId,
+        document: { id: row.id, model: row.model, accessKey: row.accessKey, status: nextStatus },
+        providerKey,
+      });
+
+      return {
+        document: await loadDetail(companyId, row.id),
+        callbackStatus: nextStatus,
+        terminal: isTerminal,
+      };
+    },
+
+    download: async (companyId: string, fiscalDocumentId: string, kind: "xml" | "danfe") => {
+      const doc = await assertBelongsToCompany(fiscalDocuments, fiscalDocumentId, companyId, "Fiscal document");
+      if (!doc.providerKey || !doc.providerDocumentId) {
+        throw conflict("Fiscal document has no provider reference to download");
+      }
+      const binding = await resolveBinding(companyId, doc.model as FiscalDocumentModel);
+      const providerConfig = await resolveProviderConfig(binding, companyId);
+      const provider = getFiscalProviderFactory(binding.providerKey)(providerConfig);
+      const request = {
+        companyId,
+        documentId: doc.id,
+        providerDocumentId: doc.providerDocumentId,
+        accessKey: doc.accessKey,
+        environment: providerConfig.environment,
+      };
+      return kind === "xml"
+        ? provider.downloadXml(request)
+        : provider.downloadDanfe(request);
     },
 
     listEvents: async (companyId: string, fiscalDocumentId: string) => {

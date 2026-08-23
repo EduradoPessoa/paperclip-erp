@@ -209,7 +209,7 @@ auditoria, segredos, plugins e integrações.
 | Ledger financeiro (`finance_events`) e orçamentos | RBAC por módulo (`erp.<módulo>:<ação>`) |
 | Auditoria: activity, case events, revisões de documentos | Central de Execução (Live Board, Run Player, Process Flow) |
 | Agents, routines, approvals, plugins, conexões | Entidades mestras: clientes, fornecedores, produtos, plano de contas |
-| | **Módulo Fiscal — F1 ✅**: contrato `FiscalProvider` + adapter SPEDY + tabelas `fiscal_*` + rotas company-scoped (ver [`doc/plans/2026-08-23-modulo-fiscal.md`](doc/plans/2026-08-23-modulo-fiscal.md)) · F2+: IBS/CBS pleno, split payment, webhooks |
+| | **Módulo Fiscal — F1/F2 ✅**: contrato `FiscalProvider` + adapter SPEDY + tabelas `fiscal_*` + rotas company-scoped · webhooks e live events `fiscal.document.*` · secrets via `company_secrets` · fila fiscal e downloads XML/DANFE (ver [`doc/plans/2026-08-23-modulo-fiscal.md`](doc/plans/2026-08-23-modulo-fiscal.md)) · F3+: entrada (Compras), UI e Central de Execução |
 
 ---
 

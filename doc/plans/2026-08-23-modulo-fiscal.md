@@ -291,3 +291,33 @@ Implementado e verificado em 2026-08-23:
 **Próximo (F2):** ciclo de vida completo (webhooks `fiscal.document.*` no live events,
 DANFE/PDF, NFS-e nacional), resolução de segredos via `company_secrets`, fila fiscal no
 board e integração com a Central de Execução.
+
+---
+
+## 11. Status de Implementação — F2 (ciclo de vida + integrações) ✅
+
+Implementado e verificado em 2026-08-23:
+
+| Item | Onde | Status |
+|---|---|---|
+| Live events `fiscal.document.status_changed` e `fiscal.document.callback_received` | `packages/shared/src/constants.ts` + `server/src/services/fiscal.ts` (publish em transmit/consult/cancel/callback) | ✅ |
+| Resolução de credenciais via `company_secrets` (`apiKeySecretRef` → `secretService.getByName` + `resolveSecretValue`) | `server/src/services/fiscal.ts` (deps `resolveCompanySecret`) + `server/src/routes/fiscal.ts` (wiring) | ✅ |
+| **Webhook do provedor** `POST /companies/:companyId/fiscal/webhooks/:providerKey` — token por binding (`extra.webhookToken`, comparação timing-safe), callback → status + evento auditado (ator `system:provider`) + live events | `server/src/routes/fiscal.ts` + `fiscal.handleProviderCallback` | ✅ |
+| **Downloads XML/DANFE** `GET .../documents/:id/xml|danfe` — streaming via provider (`downloadXml`/`downloadDanfe`) | serviço + rotas | ✅ |
+| **Fila fiscal (API)** `GET .../fiscal/queue` — documentos pendentes + contadores por status | `fiscal.queue` | ✅ |
+| **NFS-e nacional** — coberto pelo contrato/validator (municipalTaxId) e pelo adapter SPEDY (`/v1/nfse`); validação de payload em homologação | shared + spedy adapter | ✅ (homologação pendente) |
+| Testes (11/11: validators, registry, status mappers) | vitest | ✅ |
+| Typecheck shared/server | `pnpm typecheck` | ✅ |
+
+**Notas F2:**
+- Credenciais: `apiKeySecretRef` resolvido por nome no `company_secrets` da empresa; acesso
+  auditado pelo próprio secrets service (`secret_access_events`). `extra.apiKey` continua
+  aceito (transitório).
+- Webhook: recomenda-se configurar `extra.webhookToken` por binding (gerado pelo board) e
+  apontar o integrador para o endpoint; sem token configurado o endpoint responde 401.
+- Downloads exigem board (documentos sensíveis); streaming direto sem persistência local —
+  persistência de XML em `assets` fica para F3 (repositório de DF-e com hash SHA-256).
+
+**Próximo (F3):** entrada de Compras (consulta por chave, conferência, manifestação do
+destinatário, créditos), persistência de XML/DANFE em `assets`, fila fiscal no board (UI)
+e integração com a Central de Execução (Live Board).
