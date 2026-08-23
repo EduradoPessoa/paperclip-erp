@@ -178,3 +178,9 @@ export {
   fiscalEvents,
   fiscalDocumentLinks,
 } from "./fiscal.js";
+export {
+  memoryBindings,
+  memoryBindingTargets,
+  memoryOperations,
+  memoryExtractionJobs,
+} from "./memory.js";

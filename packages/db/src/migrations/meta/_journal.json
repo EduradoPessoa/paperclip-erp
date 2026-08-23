@@ -1583,6 +1583,13 @@
       "when": 1787489816024,
       "tag": "0227_tranquil_the_stranger",
       "breakpoints": true
+    },
+    {
+      "idx": 228,
+      "version": "7",
+      "when": 1787502767297,
+      "tag": "0228_harsh_micromax",
+      "breakpoints": true
     }
   ]
 }

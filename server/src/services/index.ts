@@ -201,3 +201,4 @@ export {
   mapCostToEntry,
   mapWorkProductToEntry,
 } from "./run-timeline.js";
+export { memoryService, type MemoryActor, type MemoryListOptions } from "./memory.js";

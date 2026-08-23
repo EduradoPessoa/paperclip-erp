@@ -2622,3 +2622,34 @@ export type {
   RunTimelineRun,
   RunTimelineResult,
 } from "./types/run-timeline.js";
+
+// --- Execution memory ---
+export {
+  MEMORY_OPERATION_TYPES,
+  MEMORY_OPERATION_STATUSES,
+  MEMORY_TARGET_TYPES,
+  MEMORY_JOB_STATUSES,
+  type MemoryOperationType,
+  type MemoryOperationStatus,
+  type MemoryTargetType,
+  type MemoryJobStatus,
+} from "./constants.js";
+export type {
+  MemoryScope,
+  MemorySourceKind,
+  MemorySourceRef,
+  MemoryBinding,
+  MemoryBindingTarget,
+  MemoryOperation,
+  MemoryExtractionJob,
+} from "./types/memory.js";
+export {
+  memoryScopeSchema,
+  memorySourceRefSchema,
+  upsertMemoryBindingSchema,
+  setMemoryTargetSchema,
+  createMemoryOperationSchema,
+  memoryBindingTargetTypeSchema,
+  type UpsertMemoryBinding,
+  type CreateMemoryOperation,
+} from "./validators/memory.js";

@@ -928,6 +928,28 @@ export const FISCAL_MANIFESTATION_KINDS = [
 ] as const;
 export type FiscalManifestationKind = (typeof FISCAL_MANIFESTATION_KINDS)[number];
 
+// --- Execution memory (módulo de memória do Paperclip ERP) ---
+
+export const MEMORY_OPERATION_TYPES = [
+  "capture",
+  "record_upsert",
+  "query",
+  "list",
+  "get",
+  "forget",
+  "correct",
+] as const;
+export type MemoryOperationType = (typeof MEMORY_OPERATION_TYPES)[number];
+
+export const MEMORY_OPERATION_STATUSES = ["success", "error"] as const;
+export type MemoryOperationStatus = (typeof MEMORY_OPERATION_STATUSES)[number];
+
+export const MEMORY_TARGET_TYPES = ["company", "agent"] as const;
+export type MemoryTargetType = (typeof MEMORY_TARGET_TYPES)[number];
+
+export const MEMORY_JOB_STATUSES = ["queued", "running", "succeeded", "failed", "cancelled"] as const;
+export type MemoryJobStatus = (typeof MEMORY_JOB_STATUSES)[number];
+
 export const BUDGET_SCOPE_TYPES = ["company", "agent", "project"] as const;
 export type BudgetScopeType = (typeof BUDGET_SCOPE_TYPES)[number];
 
