@@ -197,3 +197,4 @@ export { erpWmsLocations, erpWmsPickWaves, erpWmsCycleCounts } from "./wms.js";
 export { erpProductionOrders, erpProductionOrderItems } from "./production.js";
 export { erpServiceOrders, erpServiceOrderItems } from "./services.js";
 export { erpFreightOrders, erpFreightTrackingEvents } from "./tms.js";
+export { erpImportOrders, erpImportOrderItems } from "./imports.js";

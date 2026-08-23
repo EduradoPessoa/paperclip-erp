@@ -2773,6 +2773,21 @@ export {
   type AddTrackingEvent,
 } from "./erp-tms.js";
 
+// --- Importação ---
+export {
+  IMPORT_ORDER_STATUSES,
+  importOrderItemSchema,
+  createImportOrderSchema,
+  declareImportOrderSchema,
+  allocateImportCosts,
+  type ImportOrderStatus,
+  type ImportOrderItem,
+  type CreateImportOrder,
+  type ImportAllocationItemInput,
+  type ImportAllocationItemResult,
+  type ImportAllocationResult,
+} from "./erp-imports.js";
+
 // --- Master data ---
 export {
   MASTER_ENTITY_STATUSES,

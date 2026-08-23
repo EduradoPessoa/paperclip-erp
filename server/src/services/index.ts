@@ -213,3 +213,4 @@ export { wmsService, type WmsActor } from "./wms.js";
 export { productionService, type ProductionActor } from "./production.js";
 export { serviceOrdersService, type ServiceOrderActor } from "./service-orders.js";
 export { tmsService, type TmsActor } from "./tms.js";
+export { importOrdersService, type ImportActor } from "./imports.js";
