@@ -852,6 +852,8 @@ export const FINANCE_EVENT_KINDS = [
   "manual_adjustment",
   "fiscal_tax_credit",
   "fiscal_split_withheld",
+  "payable_settlement",
+  "receivable_settlement",
 ] as const;
 export type FinanceEventKind = (typeof FINANCE_EVENT_KINDS)[number];
 
@@ -1003,6 +1005,11 @@ export type ProductStatus = (typeof PRODUCT_STATUSES)[number];
 
 export const ACCOUNT_TYPES = ["asset", "liability", "equity", "revenue", "expense"] as const;
 export type AccountType = (typeof ACCOUNT_TYPES)[number];
+
+// --- Financeiro base (contas a pagar/receber) ---
+
+export const FINANCIAL_ENTRY_STATUSES = ["open", "paid", "cancelled"] as const;
+export type FinancialEntryStatus = (typeof FINANCIAL_ENTRY_STATUSES)[number];
 
 export const BUDGET_SCOPE_TYPES = ["company", "agent", "project"] as const;
 export type BudgetScopeType = (typeof BUDGET_SCOPE_TYPES)[number];

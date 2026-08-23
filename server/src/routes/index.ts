@@ -44,3 +44,4 @@ export { executionRoutes } from "./execution.js";
 export { memoryRoutes } from "./memory.js";
 export { erpModuleRoutes } from "./erp-modules.js";
 export { masterDataRoutes } from "./master-data.js";
+export { financialEntriesRoutes } from "./financial-entries.js";

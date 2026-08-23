@@ -2706,3 +2706,27 @@ export {
   type CreateErpAccount,
   type UpdateErpAccount,
 } from "./validators/master-data.js";
+
+// --- Financeiro base (contas a pagar/receber) ---
+export {
+  FINANCIAL_ENTRY_STATUSES,
+  type FinancialEntryStatus,
+} from "./constants.js";
+export type {
+  ErpFinancialEntry,
+  ErpPayable,
+  ErpReceivable,
+} from "./types/financial-entries.js";
+export {
+  createErpPayableSchema,
+  createErpReceivableSchema,
+  updateErpPayableSchema,
+  updateErpReceivableSchema,
+  settleFinancialEntrySchema,
+  financialEntryStatusSchema,
+  type CreateErpPayable,
+  type CreateErpReceivable,
+  type UpdateErpPayable,
+  type UpdateErpReceivable,
+  type SettleFinancialEntry,
+} from "./validators/financial-entries.js";

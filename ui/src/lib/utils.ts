@@ -202,6 +202,8 @@ export function financeEventKindDisplayName(eventKind: FinanceEventKind): string
     manual_adjustment: "Manual adjustment",
     fiscal_tax_credit: "Fiscal tax credit",
     fiscal_split_withheld: "Fiscal split withheld",
+    payable_settlement: "Payable settlement",
+    receivable_settlement: "Receivable settlement",
   };
   return map[eventKind];
 }
