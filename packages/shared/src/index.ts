@@ -2702,6 +2702,19 @@ export {
   type CreateBillingInvoice,
 } from "./erp-billing.js";
 
+// --- Estoques (inventory) ---
+export {
+  INVENTORY_MOVEMENT_TYPES,
+  inventoryDelta,
+  createInventoryMovementSchema,
+  receiveFromFiscalSchema,
+  shipFromSalesSchema,
+  type InventoryMovementType,
+  type CreateInventoryMovement,
+  type ReceiveFromFiscal,
+  type ShipFromSales,
+} from "./erp-inventory.js";
+
 // --- Master data ---
 export {
   MASTER_ENTITY_STATUSES,

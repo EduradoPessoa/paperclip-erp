@@ -1611,6 +1611,13 @@
       "when": 1787504341786,
       "tag": "0231_hesitant_black_widow",
       "breakpoints": true
+    },
+    {
+      "idx": 232,
+      "version": "7",
+      "when": 1787505576109,
+      "tag": "0232_abandoned_human_robot",
+      "breakpoints": true
     }
   ]
 }

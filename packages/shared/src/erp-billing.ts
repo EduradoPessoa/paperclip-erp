@@ -24,8 +24,8 @@ const MODEL_CODES: Record<string, string> = {
 
 /**
  * F1 placeholder chave de acesso (44 digits) until the provider assigns the
- * real key. Deterministic from taxId/number/series/model + timestamp so tests
- * and homologation stay stable; real keys arrive with provider integration.
+ * real key. Fully deterministic from taxId/number/series/model so tests and
+ * homologation stay stable; real keys arrive with provider integration.
  */
 export function buildPlaceholderAccessKey(input: {
   emitterTaxId: string;
@@ -38,9 +38,8 @@ export function buildPlaceholderAccessKey(input: {
     input.emitterTaxId.replace(/\D/g, "").padStart(14, "0") +
     modelCode +
     String(input.series).padStart(3, "0") +
-    String(input.number).padStart(9, "0") +
-    String(Date.now()).slice(-16).padStart(16, "0");
-  return (digits + "0").slice(0, 44).padEnd(44, "0");
+    String(input.number).padStart(9, "0");
+  return digits.padEnd(43, "0") + "0";
 }
 
 export const createBillingInvoiceSchema = z.object({

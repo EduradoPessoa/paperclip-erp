@@ -192,3 +192,4 @@ export {
   erpChartOfAccounts,
 } from "./master_data.js";
 export { erpPayables, erpReceivables } from "./financial_entries.js";
+export { erpInventoryLots, erpInventoryMovements } from "./inventory.js";
