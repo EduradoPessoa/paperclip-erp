@@ -1674,6 +1674,13 @@
       "when": 1787507456793,
       "tag": "0240_wet_wonder_man",
       "breakpoints": true
+    },
+    {
+      "idx": 241,
+      "version": "7",
+      "when": 1787507685781,
+      "tag": "0241_quick_titanium_man",
+      "breakpoints": true
     }
   ]
 }

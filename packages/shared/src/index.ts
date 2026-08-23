@@ -2827,6 +2827,19 @@ export {
   type CreateJournalEntry,
 } from "./erp-accounting.js";
 
+// --- Ativo Imobilizado ---
+export {
+  FIXED_ASSET_STATUSES,
+  createFixedAssetSchema,
+  runDepreciationSchema,
+  disposeFixedAssetSchema,
+  computeDepreciation,
+  type FixedAssetStatus,
+  type CreateFixedAsset,
+  type DepreciationInput,
+  type DepreciationComputation,
+} from "./erp-fixed-assets.js";
+
 // --- Master data ---
 export {
   MASTER_ENTITY_STATUSES,

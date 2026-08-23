@@ -217,3 +217,4 @@ export { importOrdersService, type ImportActor } from "./imports.js";
 export { exportOrdersService, type ExportActor } from "./exports.js";
 export { omsService, type OmsActor } from "./oms.js";
 export { accountingService, type AccountingActor } from "./accounting.js";
+export { fixedAssetsService, type FixedAssetActor } from "./fixed-assets.js";
