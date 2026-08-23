@@ -42,3 +42,4 @@ export { instanceDatabaseBackupRoutes } from "./instance-database-backups.js";
 export { fiscalRoutes } from "./fiscal.js";
 export { executionRoutes } from "./execution.js";
 export { memoryRoutes } from "./memory.js";
+export { erpModuleRoutes } from "./erp-modules.js";

@@ -203,8 +203,8 @@ auditoria, segredos, plugins e integrações.
 
 | ✅ Já existe (motor) | 🚧 Em construção (nossa camada) |
 |---|---|
-| Multitenancy real e segurança (secrets, keys, grants) | Manifesto e registro de módulos do ERP |
-| Pipelines: estágios, transições, revisão humana, automação | Primeiro módulo de domínio (ciclo comercial) |
+| Multitenancy real e segurança (secrets, keys, grants) | **Fase 1 ✅**: manifesto de módulos (`erp_modules`) · memória M1 (bindings + operações auditadas) · RBAC base (`erp:<módulo>:<ação>`) |
+| Pipelines: estágios, transições, revisão humana, automação | Entidades mestras: clientes, fornecedores, produtos, plano de contas |
 | Cases: documentos de negócio com eventos e histórico | Memória de execução (bindings + operações + provedores) |
 | Ledger financeiro (`finance_events`) e orçamentos | RBAC por módulo (`erp.<módulo>:<ação>`) |
 | Auditoria: activity, case events, revisões de documentos | **Central de Execução V1/V2 ✅** (Live Board + **Run Player** com linha do tempo por run — ver [`doc/plans/2026-08-23-execucao-visual-agentes.md`](doc/plans/2026-08-23-execucao-visual-agentes.md)) |

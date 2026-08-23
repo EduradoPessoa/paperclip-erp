@@ -2653,3 +2653,22 @@ export {
   type UpsertMemoryBinding,
   type CreateMemoryOperation,
 } from "./validators/memory.js";
+
+// --- ERP modules ---
+export {
+  ERP_MODULE_KEYS,
+  ERP_MODULE_LABELS,
+  type ErpModuleKey,
+} from "./constants.js";
+export type { ErpModule } from "./types/erp-module.js";
+export {
+  installErpModuleSchema,
+  updateErpModuleSchema,
+  type InstallErpModule,
+  type UpdateErpModule,
+} from "./validators/erp-module.js";
+export {
+  ERP_PERMISSION_PREFIX,
+  buildErpModulePermission,
+  isErpPermissionKey,
+} from "./erp-permissions.js";

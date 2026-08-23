@@ -184,3 +184,4 @@ export {
   memoryOperations,
   memoryExtractionJobs,
 } from "./memory.js";
+export { erpModules } from "./erp_modules.js";

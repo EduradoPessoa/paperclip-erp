@@ -950,6 +950,49 @@ export type MemoryTargetType = (typeof MEMORY_TARGET_TYPES)[number];
 export const MEMORY_JOB_STATUSES = ["queued", "running", "succeeded", "failed", "cancelled"] as const;
 export type MemoryJobStatus = (typeof MEMORY_JOB_STATUSES)[number];
 
+// --- ERP modules (catálogo estável) ---
+
+export const ERP_MODULE_KEYS = [
+  "administration",
+  "purchasing",
+  "fixed-assets",
+  "inventory",
+  "costing",
+  "sales",
+  "billing",
+  "finance",
+  "production-control",
+  "imports",
+  "exports",
+  "accounting",
+  "wms",
+  "oms",
+  "tms",
+  "services",
+  "fiscal",
+] as const;
+export type ErpModuleKey = (typeof ERP_MODULE_KEYS)[number];
+
+export const ERP_MODULE_LABELS: Record<ErpModuleKey, string> = {
+  administration: "Administração",
+  purchasing: "Compras",
+  "fixed-assets": "Ativo Imobilizado",
+  inventory: "Estoques",
+  costing: "Custo",
+  sales: "Vendas",
+  billing: "Faturamento",
+  finance: "Financeiro",
+  "production-control": "PCP",
+  imports: "Importação",
+  exports: "Exportação",
+  accounting: "Contabilidade",
+  wms: "WMS",
+  oms: "OMS",
+  tms: "TMS",
+  services: "Serviços",
+  fiscal: "Fiscal",
+};
+
 export const BUDGET_SCOPE_TYPES = ["company", "agent", "project"] as const;
 export type BudgetScopeType = (typeof BUDGET_SCOPE_TYPES)[number];
 
@@ -1101,6 +1144,7 @@ export const PERMISSION_KEYS = [
   "tasks:manage_active_checkouts",
   "pipelines:write",
   "joins:approve",
+  "erp:modules:manage",
 ] as const;
 export type PermissionKey = (typeof PERMISSION_KEYS)[number];
 

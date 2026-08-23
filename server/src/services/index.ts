@@ -202,3 +202,4 @@ export {
   mapWorkProductToEntry,
 } from "./run-timeline.js";
 export { memoryService, type MemoryActor, type MemoryListOptions } from "./memory.js";
+export { erpModuleService, type ErpModuleActor } from "./erp-modules.js";

@@ -60,6 +60,7 @@ import { costRoutes } from "./routes/costs.js";
 import { fiscalRoutes } from "./routes/fiscal.js";
 import { executionRoutes } from "./routes/execution.js";
 import { memoryRoutes } from "./routes/memory.js";
+import { erpModuleRoutes } from "./routes/erp-modules.js";
 import { activityRoutes } from "./routes/activity.js";
 import { dashboardRoutes } from "./routes/dashboard.js";
 import { attentionRoutes } from "./routes/attention.js";
@@ -533,6 +534,7 @@ export async function createApp(
 api.use(fiscalRoutes(db, { storageService: opts.storageService }));
 api.use(executionRoutes(db));
 api.use(memoryRoutes(db));
+api.use(erpModuleRoutes(db));
   api.use(activityRoutes(db));
   api.use(dashboardRoutes(db));
   api.use(attentionRoutes(db));
