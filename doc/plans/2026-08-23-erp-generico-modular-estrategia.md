@@ -502,14 +502,14 @@ A memória deve capturar:
 |---|---|
 | **Memória de execução (M1)** — `memory_bindings`, `memory_binding_targets`, `memory_operations` (append-only), `memory_extraction_jobs` + migração `0228`; serviço de bindings (default por empresa + override por agente), resolução, operações auditadas; rotas company-scoped | ✅ `bd747123` |
 | **Manifesto de módulos ERP** — `erp_modules` (registro por empresa, 17 chaves estáveis + labels) + migração `0229`; serviço/rotas (listar/instalar/atualizar/desinstalar, board + auditado) | ✅ `erp-modules` (commit C) |
+| **Entidades mestras** — `erp_customers`, `erp_suppliers`, `erp_products`, `erp_chart_of_accounts` + migração `0230`; serviço/rotas company-scoped (CRUD com busca/status, mutações board + auditadas); validators com CPF/CNPJ, NCM/CEST, plano de contas (ativo/passivo/PL/receita/despesa) | ✅ Ciclo 1 (entidades mestras) |
 | **RBAC por módulo (base)** — chave `erp:modules:manage` no `PERMISSION_KEYS`; convenção `erp:<módulo>:<ação>` com helpers tipados (`buildErpModulePermission`, `isErpPermissionKey`); enforcement completo chega junto das rotas dos primeiros módulos de domínio | ✅ `erp-permissions` (commit D) |
 | **Central de Execução V1/V2** — Live Board + Run Player | ✅ `686fda58` / `f98c6717` |
 | **Módulo Fiscal F1–F4** — contrato/SPEDY/schema, secrets/webhooks/live events, entrada + créditos + manifestação, XML/DANFE + fila UI, **split payment → Financeiro** | ✅ `cc1c5117`…`2b7d5d47` |
 
-**Pendente (próximas fases):** entidades mestras (clientes/fornecedores/produtos/plano de
-contas), Financeiro base (contas a pagar/receber), ciclo comercial (Compras/Vendas/
-Faturamento), módulos de operação/logística/contábil, providers de memória (M2) e
-enforcement de permissões por módulo nas rotas de domínio.
+**Pendente (próximas fases):** Financeiro base (contas a pagar/receber), ciclo comercial
+(Compras/Vendas/Faturamento), módulos de operação/logística/contábil, providers de
+memória (M2) e enforcement de permissões por módulo nas rotas de domínio.
 
 ---
 

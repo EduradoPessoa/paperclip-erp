@@ -185,3 +185,9 @@ export {
   memoryExtractionJobs,
 } from "./memory.js";
 export { erpModules } from "./erp_modules.js";
+export {
+  erpCustomers,
+  erpSuppliers,
+  erpProducts,
+  erpChartOfAccounts,
+} from "./master_data.js";

@@ -993,6 +993,17 @@ export const ERP_MODULE_LABELS: Record<ErpModuleKey, string> = {
   fiscal: "Fiscal",
 };
 
+// --- Master data (entidades mestras) ---
+
+export const MASTER_ENTITY_STATUSES = ["active", "inactive", "blocked"] as const;
+export type MasterEntityStatus = (typeof MASTER_ENTITY_STATUSES)[number];
+
+export const PRODUCT_STATUSES = ["active", "inactive"] as const;
+export type ProductStatus = (typeof PRODUCT_STATUSES)[number];
+
+export const ACCOUNT_TYPES = ["asset", "liability", "equity", "revenue", "expense"] as const;
+export type AccountType = (typeof ACCOUNT_TYPES)[number];
+
 export const BUDGET_SCOPE_TYPES = ["company", "agent", "project"] as const;
 export type BudgetScopeType = (typeof BUDGET_SCOPE_TYPES)[number];
 

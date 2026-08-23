@@ -2672,3 +2672,37 @@ export {
   buildErpModulePermission,
   isErpPermissionKey,
 } from "./erp-permissions.js";
+
+// --- Master data ---
+export {
+  MASTER_ENTITY_STATUSES,
+  PRODUCT_STATUSES,
+  ACCOUNT_TYPES,
+  type MasterEntityStatus,
+  type ProductStatus,
+  type AccountType,
+} from "./constants.js";
+export type {
+  ErpCustomer,
+  ErpSupplier,
+  ErpProduct,
+  ErpChartAccount,
+} from "./types/master-data.js";
+export {
+  createErpCustomerSchema,
+  updateErpCustomerSchema,
+  createErpSupplierSchema,
+  updateErpSupplierSchema,
+  createErpProductSchema,
+  updateErpProductSchema,
+  createErpAccountSchema,
+  updateErpAccountSchema,
+  type CreateErpCustomer,
+  type UpdateErpCustomer,
+  type CreateErpSupplier,
+  type UpdateErpSupplier,
+  type CreateErpProduct,
+  type UpdateErpProduct,
+  type CreateErpAccount,
+  type UpdateErpAccount,
+} from "./validators/master-data.js";

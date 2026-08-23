@@ -1597,6 +1597,13 @@
       "when": 1787502919570,
       "tag": "0229_sturdy_may_parker",
       "breakpoints": true
+    },
+    {
+      "idx": 230,
+      "version": "7",
+      "when": 1787503816219,
+      "tag": "0230_vengeful_shinobi_shaw",
+      "breakpoints": true
     }
   ]
 }
