@@ -206,3 +206,4 @@ export { erpModuleService, type ErpModuleActor } from "./erp-modules.js";
 export { masterDataService, type MasterDataListOptions } from "./master-data.js";
 export { financialEntriesService, type FinancialEntryListOptions } from "./financial-entries.js";
 export { purchasingService, type PurchasingActor } from "./purchasing.js";
+export { salesService, type SalesActor } from "./sales.js";

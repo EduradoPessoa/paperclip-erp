@@ -2684,6 +2684,17 @@ export {
   type PurchaseOrderFields,
 } from "./erp-purchasing.js";
 
+// --- Vendas (sales) ---
+export {
+  SALES_ORDER_PIPELINE_KEY,
+  SALES_ORDER_STAGES,
+  salesOrderItemSchema,
+  salesOrderFieldsSchema,
+  salesOrderTotals,
+  type SalesOrderItem,
+  type SalesOrderFields,
+} from "./erp-sales.js";
+
 // --- Master data ---
 export {
   MASTER_ENTITY_STATUSES,
