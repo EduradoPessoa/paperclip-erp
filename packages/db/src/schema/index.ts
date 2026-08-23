@@ -200,3 +200,4 @@ export { erpFreightOrders, erpFreightTrackingEvents } from "./tms.js";
 export { erpImportOrders, erpImportOrderItems } from "./imports.js";
 export { erpExportOrders, erpExportOrderItems } from "./exports.js";
 export { erpOmsOrders, erpOmsOrderItems } from "./oms.js";
+export { erpJournalEntries, erpJournalEntryLines } from "./accounting.js";

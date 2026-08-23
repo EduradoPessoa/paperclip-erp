@@ -56,3 +56,4 @@ export { tmsRoutes } from "./tms.js";
 export { importOrderRoutes } from "./imports.js";
 export { exportOrderRoutes } from "./exports.js";
 export { omsRoutes } from "./oms.js";
+export { accountingRoutes } from "./accounting.js";

@@ -2815,6 +2815,18 @@ export {
   type CreateOmsOrder,
 } from "./erp-oms.js";
 
+// --- Contabilidade ---
+export {
+  JOURNAL_ENTRY_STATUSES,
+  journalEntryLineSchema,
+  createJournalEntrySchema,
+  reverseJournalEntrySchema,
+  journalEntryIsBalanced,
+  type JournalEntryStatus,
+  type JournalEntryLine,
+  type CreateJournalEntry,
+} from "./erp-accounting.js";
+
 // --- Master data ---
 export {
   MASTER_ENTITY_STATUSES,
